@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Numberblocks Play & Bedtime</title>
@@ -25,6 +25,7 @@
       padding: 0;
       width: 100vw;
       height: 100vh;
+      height: 100dvh;
       overflow: hidden;
       font-family: -apple-system, BlinkMacSystemFont, "Rounded Mplus 1c", "Nunito", sans-serif;
       background: linear-gradient(180deg, #1d2b53 0%, #3b5998 66%, #2a243d 66%, #1c1829 100%);
@@ -702,6 +703,409 @@
       color: #1a2342;
       font-size: 1.45rem;
       padding: 16px 34px;
+    }
+
+    /* =============================================
+       IPHONE / SMALL PHONE PORTRAIT (never triggers on iPad)
+       ============================================= */
+    @media (max-width: 700px) {
+      .moon {
+        top: 86px;
+        right: 14px;
+        width: 34px;
+        height: 34px;
+      }
+
+      header {
+        padding: max(8px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) 8px max(10px, env(safe-area-inset-left));
+        gap: 6px;
+        justify-content: center;
+      }
+
+      .game-tabs, .controls {
+        width: 100%;
+        justify-content: center;
+        gap: 5px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+        touch-action: pan-x;
+      }
+      .game-tabs::-webkit-scrollbar, .controls::-webkit-scrollbar {
+        display: none;
+      }
+
+      header button {
+        padding: 6px 10px;
+        font-size: 0.78rem;
+        gap: 4px;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .targets-area {
+        gap: 8px;
+        padding: 6px 10px;
+        align-content: center;
+        min-height: 0;
+      }
+
+      .bed {
+        width: 102px;
+        height: 132px;
+        border-width: 3px;
+        border-radius: 14px 14px 10px 10px;
+        padding: 5px;
+      }
+
+      .pillow {
+        width: 78px;
+        height: 30px;
+        border-radius: 10px;
+      }
+
+      .pillow-dots {
+        gap: 3px;
+        max-width: 68px;
+      }
+
+      .p-dot {
+        width: 6px;
+        height: 6px;
+      }
+
+      .bed-mattress {
+        top: 10px;
+        left: 5px;
+        right: 5px;
+        bottom: 5px;
+      }
+
+      .in-bed-cube {
+        width: 34px;
+        height: 10px;
+      }
+
+      .in-bed-cube.head-cube {
+        height: 26px;
+      }
+
+      .blanket {
+        font-size: 1.35rem;
+        border-top-width: 7px;
+        padding-bottom: 5px;
+      }
+
+      .bed.occupied .blanket {
+        height: calc(100% - 36px);
+      }
+
+      .zzz {
+        font-size: 0.95rem;
+        top: -9px;
+        right: 6px;
+      }
+
+      .target-card {
+        width: 102px;
+        height: 128px;
+        border-width: 3px;
+        border-radius: 14px;
+        padding: 6px;
+      }
+
+      .target-card > svg {
+        width: 62px;
+        height: 62px;
+      }
+
+      .train-car {
+        margin-bottom: 10px;
+      }
+
+      .train-car::before, .train-car::after {
+        width: 20px;
+        height: 20px;
+        bottom: -12px;
+        border-width: 3px;
+      }
+      .train-car::before { left: 12px; }
+      .train-car::after { right: 12px; }
+
+      .snack-grid {
+        font-size: 1.05rem;
+        max-width: 88px;
+        min-height: 44px;
+        gap: 2px;
+      }
+
+      .target-badge {
+        font-size: 0.92rem;
+        padding: 2px 8px;
+        border-radius: 8px;
+      }
+
+      .playground {
+        height: auto;
+        min-height: 162px;
+        max-height: 36dvh;
+        gap: 14px;
+        padding: 6px 10px max(14px, env(safe-area-inset-bottom));
+        flex-wrap: nowrap;
+        justify-content: center;
+      }
+
+      .playground .draggable-item > svg {
+        width: 60px;
+        height: 60px;
+      }
+
+      .nb-label {
+        font-size: 1rem;
+        padding: 1px 8px;
+        margin-bottom: 4px;
+      }
+
+      .blocks-stack {
+        border-width: 2px;
+        border-radius: 7px;
+      }
+
+      .unit-cube {
+        width: 36px;
+        height: 22px;
+        border-top-width: 1px;
+        border-bottom-width: 1px;
+      }
+
+      .unit-cube.head-cube {
+        height: 26px;
+      }
+
+      .nb-arm {
+        width: 12px;
+        height: 6px;
+      }
+      .nb-arm.left { left: -9px; }
+      .nb-arm.right { right: -9px; }
+      .nb-arm.wave-right { right: -12px; width: 15px; }
+      .nb-glove { width: 16px; height: 16px; right: -7px; top: -7px; }
+      .nb-glove-left { width: 14px; height: 14px; left: -6px; top: -5px; }
+      .nb-shoe { width: 12px; height: 7px; }
+      .nb-shoes { gap: 5px; }
+      .nb-top-accessory svg { width: 30px; height: auto; }
+      .three-btn { width: 5px; height: 5px; }
+      .dice-pips { grid-template-columns: repeat(2, 4px); gap: 3px 8px; }
+      .dice-pip { width: 4px; height: 4px; }
+
+      /* 1–10 mode on portrait iPhone: clean 2x5 target grid + scrollable bottom tray */
+      body.mode-10 .targets-area {
+        gap: 6px;
+        padding: 4px 8px;
+      }
+
+      body.mode-10 .bed {
+        width: calc((100vw - 44px) / 5);
+        max-width: 72px;
+        height: 104px;
+        padding: 4px;
+      }
+
+      body.mode-10 .pillow {
+        width: 52px;
+        height: 22px;
+        border-radius: 8px;
+      }
+
+      body.mode-10 .p-dot {
+        width: 4px;
+        height: 4px;
+      }
+
+      body.mode-10 .bed-mattress {
+        top: 8px;
+      }
+
+      body.mode-10 .in-bed-cube {
+        width: 24px;
+        height: 6px;
+      }
+
+      body.mode-10 .in-bed-cube.head-cube {
+        height: 19px;
+      }
+
+      body.mode-10 .blanket {
+        font-size: 1rem;
+        border-top-width: 5px;
+        padding-bottom: 3px;
+      }
+
+      body.mode-10 .bed.occupied .blanket {
+        height: calc(100% - 28px);
+      }
+
+      body.mode-10 .target-card {
+        width: calc((100vw - 44px) / 5);
+        max-width: 72px;
+        height: 100px;
+        padding: 4px;
+      }
+
+      body.mode-10 .target-card > svg {
+        width: 44px;
+        height: 44px;
+      }
+
+      body.mode-10 .snack-grid {
+        font-size: 0.72rem;
+        max-width: 62px;
+        min-height: 36px;
+        gap: 1px;
+      }
+
+      body.mode-10 .target-badge {
+        font-size: 0.7rem;
+        padding: 2px 5px;
+      }
+
+      body.mode-10 .playground {
+        gap: 12px;
+        min-height: 152px;
+        padding: 4px 12px max(12px, env(safe-area-inset-bottom));
+        justify-content: flex-start;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-x;
+      }
+
+      body.mode-10 .playground .draggable-item {
+        flex: 0 0 auto;
+        touch-action: none;
+      }
+
+      body.mode-10 .playground .draggable-item > svg {
+        width: 48px;
+        height: 48px;
+      }
+
+      body.mode-10 .nb-label {
+        font-size: 0.82rem;
+        padding: 1px 6px;
+        margin-bottom: 3px;
+      }
+
+      body.mode-10 .unit-cube {
+        width: 28px;
+        height: 11px;
+      }
+
+      body.mode-10 .unit-cube.head-cube {
+        height: 20px;
+      }
+
+      body.mode-10 .nb-arm { width: 9px; height: 5px; }
+      body.mode-10 .nb-arm.left { left: -7px; }
+      body.mode-10 .nb-arm.right { right: -7px; }
+      body.mode-10 .nb-shoe { width: 9px; height: 6px; }
+      body.mode-10 .nb-top-accessory svg { width: 24px; }
+
+      .celebration h1 { font-size: 2rem; }
+      .celebration p { font-size: 1.05rem; margin-bottom: 18px; }
+      .wake-btn { font-size: 1.15rem; padding: 12px 24px; }
+    }
+
+    /* =============================================
+       IPHONE LANDSCAPE (never triggers on iPad)
+       ============================================= */
+    @media (max-height: 480px) and (pointer: coarse) {
+      .moon {
+        top: 46px;
+        right: 16px;
+        width: 30px;
+        height: 30px;
+      }
+
+      header {
+        padding: 5px max(12px, env(safe-area-inset-right)) 5px max(12px, env(safe-area-inset-left));
+        gap: 6px;
+        flex-wrap: nowrap;
+      }
+
+      .game-tabs, .controls {
+        gap: 4px;
+        flex-wrap: nowrap;
+      }
+
+      header button {
+        padding: 5px 9px;
+        font-size: 0.74rem;
+        gap: 4px;
+        white-space: nowrap;
+      }
+
+      .targets-area {
+        gap: 10px;
+        padding: 4px max(12px, env(safe-area-inset-right)) 4px max(12px, env(safe-area-inset-left));
+        min-height: 0;
+      }
+
+      .bed {
+        width: 96px;
+        height: 120px;
+        border-width: 3px;
+        padding: 5px;
+      }
+
+      .pillow { width: 72px; height: 26px; border-radius: 9px; }
+      .p-dot { width: 5px; height: 5px; }
+      .bed-mattress { top: 8px; }
+      .in-bed-cube { width: 32px; height: 9px; }
+      .in-bed-cube.head-cube { height: 24px; }
+      .blanket { font-size: 1.25rem; border-top-width: 6px; padding-bottom: 4px; }
+      .bed.occupied .blanket { height: calc(100% - 32px); }
+
+      .target-card { width: 96px; height: 118px; border-width: 3px; padding: 6px; }
+      .target-card > svg { width: 58px; height: 58px; }
+      .snack-grid { font-size: 0.95rem; max-width: 82px; min-height: 40px; }
+      .target-badge { font-size: 0.85rem; padding: 2px 8px; }
+
+      .playground {
+        height: 38dvh;
+        min-height: 122px;
+        gap: 18px;
+        padding: 2px max(14px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+        flex-wrap: nowrap;
+      }
+
+      .playground .draggable-item > svg { width: 58px; height: 58px; }
+      .nb-label { font-size: 0.9rem; padding: 1px 7px; margin-bottom: 3px; }
+      .unit-cube { width: 34px; height: 17px; }
+      .unit-cube.head-cube { height: 23px; }
+      .nb-arm { width: 11px; height: 5px; }
+      .nb-arm.left { left: -8px; }
+      .nb-arm.right { right: -8px; }
+      .nb-shoe { width: 11px; height: 6px; }
+      .nb-top-accessory svg { width: 26px; height: auto; }
+
+      body.mode-10 .bed { width: 68px; height: 94px; padding: 3px; }
+      body.mode-10 .pillow { width: 50px; height: 20px; }
+      body.mode-10 .in-bed-cube { width: 22px; height: 5px; }
+      body.mode-10 .in-bed-cube.head-cube { height: 17px; }
+      body.mode-10 .blanket { font-size: 0.95rem; border-top-width: 4px; }
+      body.mode-10 .bed.occupied .blanket { height: calc(100% - 24px); }
+      body.mode-10 .target-card { width: 68px; height: 92px; padding: 4px; }
+      body.mode-10 .target-card > svg { width: 42px; height: 42px; }
+      body.mode-10 .snack-grid { font-size: 0.68rem; max-width: 58px; min-height: 30px; }
+      body.mode-10 .target-badge { font-size: 0.68rem; padding: 1px 5px; }
+      body.mode-10 .playground { gap: 12px; }
+      body.mode-10 .unit-cube { width: 26px; height: 9px; }
+      body.mode-10 .unit-cube.head-cube { height: 16px; }
+      body.mode-10 .nb-label { font-size: 0.76rem; margin-bottom: 2px; }
+
+      .celebration h1 { font-size: 1.8rem; }
+      .celebration p { font-size: 1rem; margin-bottom: 14px; }
+      .wake-btn { font-size: 1.05rem; padding: 10px 22px; }
     }
   </style>
 </head>

@@ -472,48 +472,172 @@
       border-radius: 12px;
     }
 
+    .nb-body {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .nb-top-accessory {
+      position: relative;
+      z-index: 4;
+      margin-bottom: -4px;
+      line-height: 0;
+      pointer-events: none;
+    }
+
+    .in-bed-nb .nb-top-accessory {
+      margin-bottom: -3px;
+    }
+
     .blocks-stack {
+      position: relative;
+      z-index: 2;
       display: flex;
       flex-direction: column-reverse;
-      border-radius: 8px;
+      border-radius: 9px;
       overflow: hidden;
       box-shadow: 0 8px 18px rgba(0,0,0,0.45);
-      border: 3px solid rgba(255,255,255,0.4);
+      border: 3px solid rgba(255,255,255,0.45);
     }
 
     .unit-cube {
+      position: relative;
       width: 52px;
-      height: 31px;
+      height: 32px;
       border-top: 2px solid rgba(255,255,255,0.35);
-      border-bottom: 2px solid rgba(0,0,0,0.2);
+      border-bottom: 2px solid rgba(0,0,0,0.18);
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
-    /* Faces */
-    .face {
+    .unit-cube.head-cube {
+      height: 36px;
+      border-top: none;
+    }
+
+    /* Arms & Tentacles */
+    .nb-arms {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .nb-arm {
+      position: absolute;
+      width: 17px;
+      height: 8px;
+      border-radius: 999px;
+      top: 50%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.28);
+    }
+
+    .nb-arm.left {
+      left: -13px;
+      transform: translateY(-50%) rotate(-24deg);
+      transform-origin: right center;
+    }
+
+    .nb-arm.right {
+      right: -13px;
+      transform: translateY(-50%) rotate(24deg);
+      transform-origin: left center;
+    }
+
+    .nb-arm.wave-right {
+      right: -18px;
+      top: 34%;
+      width: 22px;
+      transform: rotate(-34deg);
+      transform-origin: left center;
+    }
+
+    .nb-glove {
+      position: absolute;
+      right: -10px;
+      top: -10px;
+      width: 22px;
+      height: 22px;
+      pointer-events: none;
+    }
+
+    .nb-glove-left {
+      position: absolute;
+      left: -9px;
+      top: -7px;
+      width: 18px;
+      height: 18px;
+      pointer-events: none;
+    }
+
+    /* Shoes */
+    .nb-shoes {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: -2px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .nb-shoe {
+      width: 16px;
+      height: 10px;
+      border-radius: 5px 5px 8px 8px;
+      box-shadow: 0 3px 5px rgba(0,0,0,0.35), inset 0 -2px 0 rgba(0,0,0,0.22);
+    }
+
+    /* Character cube details (buttons for 3, dice pips for 6) */
+    .three-buttons {
       display: flex;
       flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2.5px;
+    }
+
+    .three-btn {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #e63946;
+      border: 1.5px solid #9b1b26;
+      box-shadow: inset 1px 1px 0 rgba(255,255,255,0.45);
+    }
+
+    .dice-pips {
+      display: grid;
+      grid-template-columns: repeat(2, 6px);
+      gap: 4px 12px;
+      align-items: center;
+      justify-items: center;
+    }
+
+    .dice-pip {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+
+    /* SVG Faces */
+    .face {
+      display: flex;
       align-items: center;
       justify-content: center;
       width: 100%;
       height: 100%;
     }
-    .eyes { display: flex; gap: 7px; }
-    .eye {
-      width: 10px; height: 10px; background: #fff; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .pupil { width: 5px; height: 5px; background: #111; border-radius: 50%; }
-    .mouth {
-      width: 11px; height: 5px; border-bottom: 2.5px solid #111;
-      border-radius: 0 0 8px 8px; margin-top: 2px;
-    }
-    .closed-eyes { display: flex; gap: 8px; }
-    .closed-eye {
-      width: 9px; height: 4px; border-bottom: 2.5px solid #111;
-      border-radius: 0 0 6px 6px;
+
+    .face svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      overflow: visible;
     }
 
     /* Hide numbers in Hard Mode */
@@ -527,10 +651,16 @@
     body.mode-10 .bed-mattress { top: 12px; }
     body.mode-10 .bed.occupied .blanket { height: calc(100% - 42px); border-top-width: 8px; }
     body.mode-10 .target-card { width: 112px; height: 165px; }
-    body.mode-10 .unit-cube { width: 40px; height: 19px; }
+    body.mode-10 .unit-cube { width: 40px; height: 18px; }
+    body.mode-10 .unit-cube.head-cube { height: 28px; }
     body.mode-10 .in-bed-cube { width: 38px; height: 11px; }
-    body.mode-10 .in-bed-cube.head-cube { height: 30px; }
-    body.mode-10 .playground { gap: 14px; }
+    body.mode-10 .in-bed-cube.head-cube { height: 32px; }
+    body.mode-10 .nb-arm { width: 13px; height: 6px; }
+    body.mode-10 .nb-arm.left { left: -10px; }
+    body.mode-10 .nb-arm.right { right: -10px; }
+    body.mode-10 .nb-shoe { width: 13px; height: 8px; }
+    body.mode-10 .three-btn { width: 5px; height: 5px; }
+    body.mode-10 .playground { gap: 18px; }
 
     /* Celebration Modal */
     .celebration {
@@ -609,16 +739,16 @@
 
   <script>
     const NUMBER_DATA = {
-      1:  { name: "One",   colors: ["#e63946"], blanket: "rgba(214, 40, 40, 0.78)", food: "🍎" },
-      2:  { name: "Two",   colors: ["#f77f00"], blanket: "rgba(232, 93, 4, 0.78)",  food: "🍌" },
-      3:  { name: "Three", colors: ["#fcbf49"], blanket: "rgba(244, 162, 97, 0.78)",food: "🍓" },
-      4:  { name: "Four",  colors: ["#2a9d8f"], blanket: "rgba(33, 134, 122, 0.78)",food: "🍊" },
-      5:  { name: "Five",  colors: ["#3a86ff"], blanket: "rgba(37, 99, 235, 0.78)", food: "🫐" },
-      6:  { name: "Six",   colors: ["#7209b7"], blanket: "rgba(86, 11, 173, 0.78)", food: "🍇" },
-      7:  { name: "Seven", colors: ["#e63946", "#f77f00", "#fcbf49", "#2a9d8f", "#3a86ff", "#4361ee", "#7209b7"], blanket: "rgba(131, 56, 236, 0.78)", food: "🍉" },
-      8:  { name: "Eight", colors: ["#ff006e"], blanket: "rgba(217, 4, 41, 0.78)",  food: "🍒" },
-      9:  { name: "Nine",  colors: ["#adb5bd", "#6c757d", "#495057"], blanket: "rgba(73, 80, 87, 0.82)", food: "🥝" },
-      10: { name: "Ten",   colors: ["#ffffff"], blanket: "rgba(230, 57, 70, 0.78)", border: "#e63946", food: "🍍" }
+      1:  { name: "One",   colors: ["#e63946"], armColor: "#b91c1c", shoeColor: "#b91c1c", blanket: "rgba(214, 40, 40, 0.78)", food: "🍎" },
+      2:  { name: "Two",   colors: ["#f77f00"], armColor: "#7b2cbf", shoeColor: "#e85d04", blanket: "rgba(232, 93, 4, 0.78)",  food: "🍌" },
+      3:  { name: "Three", colors: ["#ffd13b"], armColor: "#e63946", shoeColor: "#e63946", blanket: "rgba(244, 162, 97, 0.78)",food: "🍓" },
+      4:  { name: "Four",  colors: ["#2ecc71"], armColor: "#1b7a5e", shoeColor: "#1b7a5e", blanket: "rgba(33, 134, 122, 0.78)",food: "🍊" },
+      5:  { name: "Five",  colors: ["#38bdf8"], armColor: "#1d4ed8", shoeColor: "#1d4ed8", blanket: "rgba(37, 99, 235, 0.78)", food: "🫐" },
+      6:  { name: "Six",   colors: ["#8b5cf6"], armColor: "#5b21b6", shoeColor: "#5b21b6", blanket: "rgba(86, 11, 173, 0.78)", food: "🍇" },
+      7:  { name: "Seven", colors: ["#7209b7", "#4361ee", "#38bdf8", "#2ecc71", "#ffd13b", "#f77f00", "#e63946"], armColor: "#e63946", shoeColor: "#7209b7", blanket: "rgba(131, 56, 236, 0.78)", food: "🍉" },
+      8:  { name: "Eight", colors: ["#f43f8e"], armColor: "#be185d", shoeColor: "#be185d", blanket: "rgba(217, 4, 41, 0.78)",  food: "🍒" },
+      9:  { name: "Nine",  colors: ["#64748b", "#94a3b8", "#cbd5e1"], armColor: "#475569", shoeColor: "#475569", blanket: "rgba(73, 80, 87, 0.82)", food: "🥝" },
+      10: { name: "Ten",   colors: ["#ffffff"], armColor: "#e63946", shoeColor: "#e63946", blanket: "rgba(230, 57, 70, 0.78)", border: "#e63946", food: "🍍" }
     };
 
     const SHAPES_DATA = [
@@ -881,6 +1011,191 @@
       });
     }
 
+    function buildTopAccessory(num) {
+      if (num === 3) {
+        return `<div class="nb-top-accessory">
+          <svg width="44" height="18" viewBox="0 0 44 18" aria-hidden="true">
+            <path d="M5 17 L2 5 L14 11 L22 2 L30 11 L42 5 L39 17 Z" fill="#e63946" stroke="#9b1b26" stroke-width="1.6" stroke-linejoin="round"/>
+            <circle cx="2" cy="4.5" r="2.2" fill="#ffd13b" stroke="#9b1b26" stroke-width="1"/>
+            <circle cx="22" cy="2" r="2.4" fill="#ffd13b" stroke="#9b1b26" stroke-width="1"/>
+            <circle cx="42" cy="4.5" r="2.2" fill="#ffd13b" stroke="#9b1b26" stroke-width="1"/>
+          </svg>
+        </div>`;
+      }
+      if (num === 7) {
+        return `<div class="nb-top-accessory">
+          <svg width="42" height="14" viewBox="0 0 42 14" aria-hidden="true">
+            <path d="M6 13 Q9 2 14 11 Q19 0 23 10 Q28 1 32 11 Q36 4 37 13 Z" fill="#f77f00" stroke="#e63946" stroke-width="1.4" stroke-linejoin="round"/>
+            <path d="M12 13 Q17 4 21 11 Q26 4 30 13 Z" fill="#ffd13b"/>
+          </svg>
+        </div>`;
+      }
+      return "";
+    }
+
+    function buildFaceSVG(num, isSleeping) {
+      const cheeks = `<ellipse cx="11" cy="24" rx="3.4" ry="2" fill="rgba(255,105,140,0.55)"/><ellipse cx="41" cy="24" rx="3.4" ry="2" fill="rgba(255,105,140,0.55)"/>`;
+      const sleepMouth = `<ellipse cx="26" cy="26.5" rx="3" ry="2.4" fill="#1e293b"/>`;
+      const smile = (stroke = "#1e293b", fill = "none") =>
+        fill === "none"
+          ? `<path d="M19 24.5 Q26 30.5 33 24.5" fill="none" stroke="${stroke}" stroke-width="2.4" stroke-linecap="round"/>`
+          : `<path d="M18 23.5 Q26 31.5 34 23.5 Z" fill="${fill}" stroke="${stroke}" stroke-width="1.8" stroke-linejoin="round"/>`;
+
+      let eyesMarkup = "";
+      let mouthMarkup = isSleeping ? sleepMouth : smile();
+
+      if (num === 1) {
+        eyesMarkup = isSleeping
+          ? `<path d="M18 15 Q26 21 34 15" fill="none" stroke="#1e293b" stroke-width="2.8" stroke-linecap="round"/>`
+          : `<circle cx="26" cy="14" r="8.2" fill="#fff" stroke="#1e293b" stroke-width="1.6"/>
+             <circle cx="26" cy="14" r="4.3" fill="#1e293b"/>
+             <circle cx="24.2" cy="12" r="1.5" fill="#fff"/>`;
+        if (!isSleeping) mouthMarkup = smile("#9b1b26", "#ffccd5");
+      } else if (num === 2) {
+        const frame = `<circle cx="17" cy="14" r="7.4" fill="${isSleeping ? "rgba(255,255,255,0.22)" : "#fff"}" stroke="#7b2cbf" stroke-width="2.8"/>
+          <circle cx="35" cy="14" r="7.4" fill="${isSleeping ? "rgba(255,255,255,0.22)" : "#fff"}" stroke="#7b2cbf" stroke-width="2.8"/>
+          <line x1="24.2" y1="14" x2="27.8" y2="14" stroke="#7b2cbf" stroke-width="2.8"/>
+          <line x1="5" y1="13" x2="9.6" y2="13.5" stroke="#7b2cbf" stroke-width="2.4" stroke-linecap="round"/>
+          <line x1="42.4" y1="13.5" x2="47" y2="13" stroke="#7b2cbf" stroke-width="2.4" stroke-linecap="round"/>`;
+        eyesMarkup = isSleeping
+          ? `${frame}
+             <path d="M13 15 Q17 18.5 21 15" fill="none" stroke="#1e293b" stroke-width="2.2" stroke-linecap="round"/>
+             <path d="M31 15 Q35 18.5 39 15" fill="none" stroke="#1e293b" stroke-width="2.2" stroke-linecap="round"/>`
+          : `${frame}
+             <circle cx="17.5" cy="14" r="3.2" fill="#1e293b"/><circle cx="16.3" cy="12.7" r="1.1" fill="#fff"/>
+             <circle cx="34.5" cy="14" r="3.2" fill="#1e293b"/><circle cx="33.3" cy="12.7" r="1.1" fill="#fff"/>`;
+        if (!isSleeping) mouthMarkup = smile("#5a189a", "#f472b6");
+      } else if (num === 3) {
+        eyesMarkup = isSleeping
+          ? `<path d="M12 16 Q17 20 22 16" fill="none" stroke="#1e293b" stroke-width="2.4" stroke-linecap="round"/>
+             <path d="M30 16 Q35 20 40 16" fill="none" stroke="#1e293b" stroke-width="2.4" stroke-linecap="round"/>`
+          : `<circle cx="17" cy="14.5" r="5.5" fill="#fff" stroke="#1e293b" stroke-width="1.4"/>
+             <circle cx="17" cy="14.5" r="2.7" fill="#1e293b"/><circle cx="15.8" cy="13.3" r="1" fill="#fff"/>
+             <circle cx="35" cy="14.5" r="5.5" fill="#fff" stroke="#1e293b" stroke-width="1.4"/>
+             <circle cx="35" cy="14.5" r="2.7" fill="#1e293b"/><circle cx="33.8" cy="13.3" r="1" fill="#fff"/>`;
+        if (!isSleeping) mouthMarkup = smile("#b91c1c", "#f43f5e");
+      } else if (num === 4 || num === 9) {
+        const browColor = num === 4 ? "#14532d" : "#334155";
+        const brows = `<rect x="10.5" y="5" width="12" height="4.2" rx="1.2" fill="${browColor}"/>
+          <rect x="29.5" y="5" width="12" height="4.2" rx="1.2" fill="${browColor}"/>`;
+        eyesMarkup = isSleeping
+          ? `${brows}
+             <path d="M12 16.5 Q16.5 20.5 21 16.5" fill="none" stroke="#1e293b" stroke-width="2.4" stroke-linecap="round"/>
+             <path d="M31 16.5 Q35.5 20.5 40 16.5" fill="none" stroke="#1e293b" stroke-width="2.4" stroke-linecap="round"/>`
+          : `${brows}
+             <rect x="11.5" y="10.5" width="10" height="9.5" rx="2.2" fill="#fff" stroke="#1e293b" stroke-width="1.4"/>
+             <circle cx="16.5" cy="15.2" r="2.7" fill="#1e293b"/><circle cx="15.4" cy="14" r="1" fill="#fff"/>
+             <rect x="30.5" y="10.5" width="10" height="9.5" rx="2.2" fill="#fff" stroke="#1e293b" stroke-width="1.4"/>
+             <circle cx="35.5" cy="15.2" r="2.7" fill="#1e293b"/><circle cx="34.4" cy="14" r="1" fill="#fff"/>`;
+        if (!isSleeping) mouthMarkup = smile(browColor, num === 4 ? "#bbf7d0" : "#e2e8f0");
+      } else if (num === 5) {
+        const star = `<polygon points="16.5,2.5 19.6,9.2 26.8,10.1 21.4,15 22.8,22.2 16.5,18.7 10.2,22.2 11.6,15 6.2,10.1 13.4,9.2" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1.2" stroke-linejoin="round"/>`;
+        eyesMarkup = isSleeping
+          ? `${star}
+             <path d="M12.8 14 Q16.5 17.2 20.2 14" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"/>
+             <path d="M31 15 Q35.5 19 40 15" fill="none" stroke="#1e293b" stroke-width="2.4" stroke-linecap="round"/>`
+          : `${star}
+             <circle cx="16.5" cy="13.5" r="4.5" fill="#fff"/>
+             <circle cx="16.5" cy="13.5" r="2.3" fill="#1e293b"/><circle cx="15.5" cy="12.5" r="0.85" fill="#fff"/>
+             <circle cx="35.5" cy="13.5" r="5.5" fill="#fff" stroke="#1d4ed8" stroke-width="2"/>
+             <circle cx="35.5" cy="13.5" r="2.7" fill="#1e293b"/><circle cx="34.3" cy="12.3" r="1" fill="#fff"/>`;
+        if (!isSleeping) mouthMarkup = smile("#1e3a8a", "#f472b6");
+      } else if (num === 8) {
+        const mask = `<path d="M7 10 Q16 6 26 11 Q36 6 45 10 Q46 18 41 21 Q34 22 26 17 Q18 22 11 21 Q6 18 7 10 Z" fill="#9d174d" stroke="#500724" stroke-width="1.2"/>`;
+        eyesMarkup = isSleeping
+          ? `${mask}
+             <path d="M12.5 15 Q16.5 18 20.5 15" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+             <path d="M31.5 15 Q35.5 18 39.5 15" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>`
+          : `${mask}
+             <circle cx="16.5" cy="14.2" r="4.6" fill="#fff"/>
+             <circle cx="16.5" cy="14.2" r="2.4" fill="#1e293b"/><circle cx="15.5" cy="13.1" r="0.9" fill="#fff"/>
+             <circle cx="35.5" cy="14.2" r="4.6" fill="#fff"/>
+             <circle cx="35.5" cy="14.2" r="2.4" fill="#1e293b"/><circle cx="34.5" cy="13.1" r="0.9" fill="#fff"/>`;
+        if (!isSleeping) mouthMarkup = smile("#500724", "#fbcfe8");
+      } else if (num === 10) {
+        const starL = `<polygon points="16,3.5 18.8,9.5 25.2,10.2 20.4,14.6 21.7,21 16,17.8 10.3,21 11.6,14.6 6.8,10.2 13.2,9.5" fill="#e63946"/>`;
+        const starR = `<polygon points="36,3.5 38.8,9.5 45.2,10.2 40.4,14.6 41.7,21 36,17.8 30.3,21 31.6,14.6 26.8,10.2 33.2,9.5" fill="#e63946"/>`;
+        eyesMarkup = isSleeping
+          ? `${starL}${starR}
+             <path d="M12.5 13.8 Q16 16.8 19.5 13.8" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round"/>
+             <path d="M32.5 13.8 Q36 16.8 39.5 13.8" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round"/>`
+          : `${starL}${starR}
+             <circle cx="16" cy="13.2" r="4.1" fill="#fff"/><circle cx="16" cy="13.2" r="2.1" fill="#1e293b"/>
+             <circle cx="36" cy="13.2" r="4.1" fill="#fff"/><circle cx="36" cy="13.2" r="2.1" fill="#1e293b"/>`;
+        if (!isSleeping) mouthMarkup = smile("#b91c1c", "#fecdd3");
+      } else {
+        // 6 and 7
+        eyesMarkup = isSleeping
+          ? `<path d="M12 15.5 Q17 19.5 22 15.5" fill="none" stroke="#1e293b" stroke-width="2.4" stroke-linecap="round"/>
+             <path d="M30 15.5 Q35 19.5 40 15.5" fill="none" stroke="#1e293b" stroke-width="2.4" stroke-linecap="round"/>`
+          : `<circle cx="17" cy="14" r="5.5" fill="#fff" stroke="#1e293b" stroke-width="1.4"/>
+             <circle cx="17" cy="14" r="2.7" fill="#1e293b"/><circle cx="15.8" cy="12.8" r="1" fill="#fff"/>
+             <circle cx="35" cy="14" r="5.5" fill="#fff" stroke="#1e293b" stroke-width="1.4"/>
+             <circle cx="35" cy="14" r="2.7" fill="#1e293b"/><circle cx="33.8" cy="12.8" r="1" fill="#fff"/>`;
+        if (!isSleeping) mouthMarkup = smile("#1e293b", "#fecdd3");
+      }
+
+      return `<svg viewBox="0 0 52 34" aria-hidden="true">${eyesMarkup}${cheeks}${mouthMarkup}</svg>`;
+    }
+
+    function buildArms(num, data) {
+      const arms = document.createElement("div");
+      arms.className = "nb-arms";
+
+      if (num === 8) {
+        // Octoblock: 4 tentacles on each side
+        [24, 42, 60, 78].forEach((pct, idx) => {
+          const left = document.createElement("div");
+          left.className = "nb-arm left";
+          left.style.background = data.armColor;
+          left.style.top = `${pct}%`;
+          left.style.transform = `translateY(-50%) rotate(${-28 + idx * 14}deg)`;
+
+          const right = document.createElement("div");
+          right.className = "nb-arm right";
+          right.style.background = data.armColor;
+          right.style.top = `${pct}%`;
+          right.style.transform = `translateY(-50%) rotate(${28 - idx * 14}deg)`;
+
+          arms.appendChild(left);
+          arms.appendChild(right);
+        });
+        return arms;
+      }
+
+      const left = document.createElement("div");
+      left.className = "nb-arm left";
+      left.style.background = data.armColor;
+      left.style.top = num === 1 ? "56%" : "42%";
+
+      const right = document.createElement("div");
+      right.className = num === 5 ? "nb-arm wave-right" : "nb-arm right";
+      right.style.background = data.armColor;
+      if (num !== 5) right.style.top = num === 1 ? "56%" : "42%";
+
+      if (num === 5) {
+        // Five's iconic blue 5-fingered high-five glove!
+        right.innerHTML = `<svg class="nb-glove" viewBox="0 0 28 28" aria-hidden="true">
+          <path d="M7 18 L5 11 Q5 9 7 9 Q8.5 9 9 12 L10 5 Q10.5 3.5 12 4 Q13.5 4.5 13 11 L15 4 Q16 2.5 17.5 3.5 Q18.8 4.5 17.5 11 L20 6 Q21.5 5 22.5 6.5 Q23.2 8 20.5 13 L23 11.5 Q25 11 25 13 Q24.5 15 20 18 L18 23 Q13 25 8 22 Z" fill="#2563eb" stroke="#1e3a8a" stroke-width="1.3" stroke-linejoin="round"/>
+          <polygon points="14,13 15,15.5 17.5,15.8 15.6,17.3 16.2,19.7 14,18.4 11.8,19.7 12.4,17.3 10.5,15.8 13,15.5" fill="#93c5fd"/>
+        </svg>`;
+      } else if (num === 10) {
+        // Ten's red gloves
+        right.innerHTML = `<svg class="nb-glove" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="13" r="6" fill="#e63946" stroke="#9b1b26" stroke-width="1.4"/>
+          <circle cx="12" cy="13" r="2.2" fill="#fff"/>
+        </svg>`;
+        left.innerHTML = `<svg class="nb-glove-left" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="13" r="6" fill="#e63946" stroke="#9b1b26" stroke-width="1.4"/>
+          <circle cx="12" cy="13" r="2.2" fill="#fff"/>
+        </svg>`;
+      }
+
+      arms.appendChild(left);
+      arms.appendChild(right);
+      return arms;
+    }
+
     function buildNumberblock(num, isSleepingInBed) {
       const data = NUMBER_DATA[num];
       const wrapper = document.createElement("div");
@@ -894,6 +1209,18 @@
         wrapper.appendChild(label);
       }
 
+      const body = document.createElement("div");
+      body.className = "nb-body";
+
+      const topAccessory = buildTopAccessory(num);
+      if (topAccessory) {
+        body.insertAdjacentHTML("beforeend", topAccessory);
+      }
+
+      if (!isSleepingInBed) {
+        body.appendChild(buildArms(num, data));
+      }
+
       const stack = document.createElement("div");
       stack.className = isSleepingInBed ? "in-bed-stack" : "blocks-stack";
       if (data.border) stack.style.borderColor = data.border;
@@ -904,18 +1231,34 @@
         cube.style.background = data.colors[i % data.colors.length];
 
         if (i === num - 1) {
-          if (isSleepingInBed) cube.classList.add("head-cube");
+          cube.classList.add("head-cube");
           const face = document.createElement("div");
           face.className = "face";
-          face.innerHTML = isSleepingInBed
-            ? `<div class="closed-eyes"><div class="closed-eye"></div><div class="closed-eye"></div></div><div class="sleep-cheeks"><span class="cheek"></span><span class="sleep-mouth"></span><span class="cheek"></span></div>`
-            : `<div class="eyes"><div class="eye"><div class="pupil"></div></div><div class="eye"><div class="pupil"></div></div></div><div class="mouth"></div>`;
+          face.innerHTML = buildFaceSVG(num, isSleepingInBed);
           cube.appendChild(face);
+        } else if (!isSleepingInBed && num === 3 && i === 1) {
+          // Three's iconic 3 red buttons on her middle block
+          cube.innerHTML = `<div class="three-buttons"><span class="three-btn"></span><span class="three-btn"></span><span class="three-btn"></span></div>`;
+        } else if (!isSleepingInBed && num === 6 && i === 2) {
+          // Six's signature dice pips
+          cube.innerHTML = `<div class="dice-pips"><span class="dice-pip"></span><span class="dice-pip"></span><span class="dice-pip"></span><span class="dice-pip"></span></div>`;
+        } else if (!isSleepingInBed && num === 6 && i === 1) {
+          cube.innerHTML = `<div class="dice-pips"><span class="dice-pip"></span><span class="dice-pip"></span></div>`;
         }
+
         stack.appendChild(cube);
       }
 
-      wrapper.appendChild(stack);
+      body.appendChild(stack);
+
+      if (!isSleepingInBed) {
+        const shoes = document.createElement("div");
+        shoes.className = "nb-shoes";
+        shoes.innerHTML = `<span class="nb-shoe" style="background:${data.shoeColor}"></span><span class="nb-shoe" style="background:${data.shoeColor}"></span>`;
+        body.appendChild(shoes);
+      }
+
+      wrapper.appendChild(body);
       return wrapper;
     }
 

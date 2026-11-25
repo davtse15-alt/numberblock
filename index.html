@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Numberblocks Play & Bedtime</title>
+  <style>
+    :root {
+      --gold: #ffd166;
+      --card-bg: rgba(255, 255, 255, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+      touch-action: none;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Rounded Mplus 1c", "Nunito", sans-serif;
+      background: linear-gradient(180deg, #1d2b53 0%, #3b5998 66%, #2a243d 66%, #1c1829 100%);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: background 1s ease;
+    }
+
+    /* Mode-specific themes */
+    body.lights-out {
+      background: linear-gradient(180deg, #090d1a 0%, #15203b 66%, #120f1c 66%, #0a0810 100%);
+    }
+    body.theme-train {
+      background: linear-gradient(180deg, #2b6cb0 0%, #63b3ed 66%, #2f855a 66%, #22543d 100%);
+    }
+    body.theme-snack {
+      background: linear-gradient(180deg, #744210 0%, #b7791f 66%, #4a2c11 66%, #2d1a0a 100%);
+    }
+    body.theme-shapes {
+      background: linear-gradient(180deg, #322659 0%, #553c9a 66%, #231942 66%, #160f29 100%);
+    }
+
+    /* Sky & Decor */
+    .sky-decor {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .moon {
+      position: absolute;
+      top: 76px;
+      right: 32px;
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: #fff3b0;
+      box-shadow: 0 0 28px rgba(255, 243, 176, 0.55);
+      transition: opacity 0.5s ease;
+    }
+
+    body:not(.theme-bed) .moon,
+    body:not(.theme-bed) .star {
+      opacity: 0;
+    }
+
+    .star {
+      position: absolute;
+      background: #fff;
+      border-radius: 50%;
+      opacity: 0.4;
+      animation: twinkle 3s infinite ease-in-out;
+    }
+
+    body.lights-out .star {
+      opacity: 0.95;
+      transform: scale(1.3);
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.25; transform: scale(0.9); }
+      50% { opacity: 0.95; transform: scale(1.25); }
+    }
+
+    /* Top Navigation Bar */
+    header {
+      position: relative;
+      z-index: 20;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 18px;
+      background: rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(8px);
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .game-tabs, .controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.18);
+      color: #fff;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+      transition: transform 0.12s ease, background 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    button:active {
+      transform: scale(0.93);
+    }
+
+    button.active {
+      background: var(--gold);
+      color: #1a2342;
+    }
+
+    button.wake-action {
+      background: #ff9f1c;
+      color: #1a2342;
+    }
+
+    /* Target Zone (Beds / Train Cars / Snack Plates / Shape Cutouts) */
+    .targets-area {
+      position: relative;
+      z-index: 5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      padding: 10px 18px;
+      flex-wrap: wrap;
+      flex: 1;
+    }
+
+    /* --- BED STYLING --- */
+    .bed {
+      width: 158px;
+      height: 220px;
+      background: #5c4033;
+      border: 4px solid #7f5539;
+      border-radius: 18px 18px 12px 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px;
+      position: relative;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .bed.highlight, .target-card.highlight {
+      transform: scale(1.07);
+      border-color: var(--gold) !important;
+      box-shadow: 0 0 28px rgba(255, 209, 102, 0.8);
+    }
+
+    .pillow {
+      width: 120px;
+      height: 36px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      box-shadow: inset 0 -3px 0 #dee2e6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+
+    .pillow-dots {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 105px;
+    }
+
+    .p-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #495057;
+    }
+
+    /* Full Numberblock lying inside the bed */
+    .bed-mattress {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      position: relative;
+      padding-bottom: 4px;
+      z-index: 3;
+    }
+
+    .in-bed-stack {
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 2px solid rgba(255,255,255,0.45);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      animation: breathe 3s infinite ease-in-out;
+    }
+
+    @keyframes breathe {
+      0%, 100% { transform: scaleY(1); }
+      50% { transform: scaleY(0.96); }
+    }
+
+    .in-bed-cube {
+      width: 44px;
+      height: 13px;
+      border-top: 1px solid rgba(255,255,255,0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .in-bed-cube.head-cube {
+      height: 26px;
+    }
+
+    /* Semi-transparent blanket so the full Numberblock shows through */
+    .blanket {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 56%;
+      border-radius: 12px 12px 8px 8px;
+      border-top: 4px solid rgba(255,255,255,0.65);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 6px;
+      font-size: 2rem;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.65);
+      transition: height 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .bed.occupied .blanket {
+      height: 62%;
+      opacity: 0.78;
+    }
+
+    .zzz {
+      position: absolute;
+      top: -16px;
+      right: 8px;
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: #ffe066;
+      opacity: 0;
+      z-index: 10;
+    }
+
+    .bed.occupied .zzz {
+      animation: floatZ 2.3s infinite ease-in-out;
+    }
+
+    @keyframes floatZ {
+      0% { opacity: 0; transform: translateY(6px) scale(0.8); }
+      50% { opacity: 1; transform: translateY(-8px) scale(1.1); }
+      100% { opacity: 0; transform: translateY(-18px) scale(0.9); }
+    }
+
+    /* --- TRAIN, SNACK & SHAPE TARGET CARDS --- */
+    .target-card {
+      width: 155px;
+      height: 205px;
+      background: rgba(255, 255, 255, 0.16);
+      border: 4px dashed rgba(255, 255, 255, 0.45);
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 8px;
+      position: relative;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .target-card.occupied {
+      border-style: solid;
+      border-color: #4ade80;
+      background: rgba(74, 222, 128, 0.18);
+    }
+
+    /* Train Wheels */
+    .train-car {
+      background: #2d3748;
+      border: 4px solid #cbd5e0;
+      border-radius: 14px;
+      margin-bottom: 14px;
+    }
+    .train-car::before, .train-car::after {
+      content: "";
+      position: absolute;
+      bottom: -16px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #1a202c;
+      border: 4px solid #a0aec0;
+    }
+    .train-car::before { left: 20px; }
+    .train-car::after { right: 20px; }
+
+    .train-departing {
+      animation: chugAway 1.6s forwards ease-in;
+    }
+    @keyframes chugAway {
+      0% { transform: translateX(0); }
+      15% { transform: translateX(18px); }
+      100% { transform: translateX(-140vw); }
+    }
+
+    .snack-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 4px;
+      font-size: 1.55rem;
+      max-width: 130px;
+      min-height: 75px;
+    }
+
+    .target-badge {
+      font-size: 1.5rem;
+      font-weight: 900;
+      background: rgba(0,0,0,0.35);
+      padding: 4px 14px;
+      border-radius: 12px;
+    }
+
+    /* --- PLAYGROUND (DRAGGABLE ITEMS) --- */
+    .playground {
+      position: relative;
+      z-index: 12;
+      height: 36vh;
+      min-height: 225px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 28px;
+      padding: 0 20px 24px;
+      flex-wrap: wrap;
+    }
+
+    .draggable-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: grab;
+      position: relative;
+      transition: transform 0.18s ease;
+      z-index: 15;
+    }
+
+    .draggable-item.selected {
+      transform: scale(1.12) translateY(-10px);
+      filter: drop-shadow(0 0 16px rgba(255, 209, 102, 0.95));
+    }
+
+    .draggable-item.dragging {
+      position: fixed;
+      z-index: 100;
+      pointer-events: none;
+      transform: scale(1.12);
+      transition: none;
+    }
+
+    .nb-label {
+      font-size: 1.45rem;
+      font-weight: 900;
+      margin-bottom: 6px;
+      background: rgba(0, 0, 0, 0.42);
+      padding: 2px 12px;
+      border-radius: 12px;
+    }
+
+    .blocks-stack {
+      display: flex;
+      flex-direction: column-reverse;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.45);
+      border: 3px solid rgba(255,255,255,0.4);
+    }
+
+    .unit-cube {
+      width: 52px;
+      height: 31px;
+      border-top: 2px solid rgba(255,255,255,0.35);
+      border-bottom: 2px solid rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Faces */
+    .face {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+    }
+    .eyes { display: flex; gap: 7px; }
+    .eye {
+      width: 10px; height: 10px; background: #fff; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .pupil { width: 5px; height: 5px; background: #111; border-radius: 50%; }
+    .mouth {
+      width: 11px; height: 5px; border-bottom: 2.5px solid #111;
+      border-radius: 0 0 8px 8px; margin-top: 2px;
+    }
+    .closed-eyes { display: flex; gap: 8px; }
+    .closed-eye {
+      width: 9px; height: 4px; border-bottom: 2.5px solid #111;
+      border-radius: 0 0 6px 6px;
+    }
+
+    /* Hide numbers in Hard Mode */
+    body.hard-mode .num-text {
+      display: none !important;
+    }
+
+    /* Compact sizing for 1-10 mode */
+    body.mode-10 .bed { width: 112px; height: 175px; }
+    body.mode-10 .pillow { width: 84px; height: 28px; }
+    body.mode-10 .target-card { width: 112px; height: 165px; }
+    body.mode-10 .unit-cube { width: 40px; height: 19px; }
+    body.mode-10 .in-bed-cube { width: 32px; height: 8px; }
+    body.mode-10 .in-bed-cube.head-cube { height: 18px; }
+    body.mode-10 .playground { gap: 14px; }
+
+    /* Celebration Modal */
+    .celebration {
+      position: fixed;
+      inset: 0;
+      background: rgba(11, 16, 33, 0.75);
+      backdrop-filter: blur(5px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 60;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .celebration.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .celebration h1 {
+      font-size: 2.8rem;
+      margin: 0 0 10px;
+      color: var(--gold);
+    }
+
+    .celebration p {
+      font-size: 1.35rem;
+      margin: 0 0 26px;
+      color: #f1f5f9;
+    }
+
+    .wake-btn {
+      background: var(--gold);
+      color: #1a2342;
+      font-size: 1.45rem;
+      padding: 16px 34px;
+    }
+  </style>
+</head>
+<body class="theme-bed">
+
+  <div class="sky-decor" id="skyDecor">
+    <div class="moon"></div>
+  </div>
+
+  <header>
+    <div class="game-tabs">
+      <button id="tabBed" class="active" onclick="setGameMode('bed')">🌙 Bedtime</button>
+      <button id="tabTrain" onclick="setGameMode('train')">🚂 Train</button>
+      <button id="tabSnack" onclick="setGameMode('snack')">🍎 Snacks</button>
+      <button id="tabShapes" onclick="setGameMode('shapes')">🔷 Shapes</button>
+    </div>
+
+    <div class="controls">
+      <button id="btnRange5" class="active" onclick="setMaxNumber(5)">1–5</button>
+      <button id="btnRange10" onclick="setMaxNumber(10)">1–10</button>
+      <button id="btnHard" onclick="toggleHardMode()">🧠 Count Only</button>
+      <button class="wake-action" onclick="wakeUpAndReset()">☀️ Wake Up!</button>
+    </div>
+  </header>
+
+  <main class="targets-area" id="targetsArea"></main>
+
+  <section class="playground" id="playground"></section>
+
+  <div class="celebration" id="celebration">
+    <h1 id="celebTitle">Shhh... Goodnight! 😴</h1>
+    <p id="celebSub">All the Numberblocks are fast asleep in their beds.</p>
+    <button class="wake-btn" onclick="wakeUpAndReset()">☀️ Wake Up & Play Again!</button>
+  </div>
+
+  <script>
+    const NUMBER_DATA = {
+      1:  { name: "One",   colors: ["#e63946"], blanket: "rgba(214, 40, 40, 0.78)", food: "🍎" },
+      2:  { name: "Two",   colors: ["#f77f00"], blanket: "rgba(232, 93, 4, 0.78)",  food: "🍌" },
+      3:  { name: "Three", colors: ["#fcbf49"], blanket: "rgba(244, 162, 97, 0.78)",food: "🍓" },
+      4:  { name: "Four",  colors: ["#2a9d8f"], blanket: "rgba(33, 134, 122, 0.78)",food: "🍊" },
+      5:  { name: "Five",  colors: ["#3a86ff"], blanket: "rgba(37, 99, 235, 0.78)", food: "🫐" },
+      6:  { name: "Six",   colors: ["#7209b7"], blanket: "rgba(86, 11, 173, 0.78)", food: "🍇" },
+      7:  { name: "Seven", colors: ["#e63946", "#f77f00", "#fcbf49", "#2a9d8f", "#3a86ff", "#4361ee", "#7209b7"], blanket: "rgba(131, 56, 236, 0.78)", food: "🍉" },
+      8:  { name: "Eight", colors: ["#ff006e"], blanket: "rgba(217, 4, 41, 0.78)",  food: "🍒" },
+      9:  { name: "Nine",  colors: ["#adb5bd", "#6c757d", "#495057"], blanket: "rgba(73, 80, 87, 0.82)", food: "🥝" },
+      10: { name: "Ten",   colors: ["#ffffff"], blanket: "rgba(230, 57, 70, 0.78)", border: "#e63946", food: "🍍" }
+    };
+
+    const SHAPES_DATA = [
+      { id: "circle",   name: "Circle",   color: "#ef4444", svg: `<circle cx="50" cy="50" r="38" />` },
+      { id: "square",   name: "Square",   color: "#3b82f6", svg: `<rect x="16" y="16" width="68" height="68" rx="8" />` },
+      { id: "triangle", name: "Triangle", color: "#eab308", svg: `<polygon points="50,12 88,84 12,84" />` },
+      { id: "star",     name: "Star",     color: "#f97316", svg: `<polygon points="50,8 61,36 92,36 67,54 76,84 50,66 24,84 33,54 8,36 39,36" />` },
+      { id: "heart",    name: "Heart",    color: "#ec4899", svg: `<path d="M50 84 C20 62 10 44 10 30 A20 20 0 0 1 50 26 A20 20 0 0 1 90 30 C90 44 80 62 50 84 Z" />` },
+      { id: "diamond",  name: "Diamond",  color: "#14b8a6", svg: `<polygon points="50,8 86,50 50,92 14,50" />` },
+      { id: "hexagon",  name: "Hexagon",  color: "#8b5cf6", svg: `<polygon points="50,8 86,29 86,71 50,92 14,71 14,29" />` },
+      { id: "pentagon", name: "Pentagon", color: "#22c55e", svg: `<polygon points="50,10 90,39 75,86 25,86 10,39" />` }
+    ];
+
+    let gameMode = "bed"; // 'bed' | 'train' | 'snack' | 'shapes'
+    let maxNumber = 5;
+    let hardMode = false;
+    let matchedCount = 0;
+    let totalTargets = 5;
+    let selectedId = null;
+    let activeDrag = null;
+    let audioCtx = null;
+
+    function createStars() {
+      const sky = document.getElementById("skyDecor");
+      for (let i = 0; i < 30; i++) {
+        const star = document.createElement("div");
+        star.className = "star";
+        const size = Math.random() * 4 + 2;
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+        star.style.left = `${Math.random() * 96}%`;
+        star.style.top = `${Math.random() * 55}%`;
+        star.style.animationDelay = `${Math.random() * 3}s`;
+        sky.appendChild(star);
+      }
+    }
+
+    function playTone(freq, duration = 0.25, delay = 0) {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === "suspended") audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + delay);
+        gain.gain.setValueAtTime(0.001, audioCtx.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(0.18, audioCtx.currentTime + delay + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + delay + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime + delay);
+        osc.stop(audioCtx.currentTime + delay + duration);
+      } catch (e) {}
+    }
+
+    function playCountChimes(num) {
+      const scale = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25, 587.33, 659.25];
+      for (let i = 0; i < num; i++) {
+        playTone(scale[i % scale.length], 0.2, i * 0.12);
+      }
+    }
+
+    function playWakeUpChime() {
+      const notes = [261.63, 329.63, 392.00, 523.25];
+      notes.forEach((n, i) => playTone(n, 0.25, i * 0.1));
+    }
+
+    function playLullaby() {
+      const notes = [392.00, 329.63, 261.63, 293.66, 329.63, 261.63];
+      notes.forEach((n, i) => playTone(n, 0.42, i * 0.32));
+    }
+
+    function speak(text) {
+      if (!("speechSynthesis" in window)) return;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.rate = 0.95;
+      utter.pitch = 1.15;
+      window.speechSynthesis.speak(utter);
+    }
+
+    function setGameMode(mode) {
+      gameMode = mode;
+      document.body.className = `theme-${mode} ${maxNumber === 10 ? "mode-10" : ""} ${hardMode ? "hard-mode" : ""}`;
+      document.getElementById("tabBed").classList.toggle("active", mode === "bed");
+      document.getElementById("tabTrain").classList.toggle("active", mode === "train");
+      document.getElementById("tabSnack").classList.toggle("active", mode === "snack");
+      document.getElementById("tabShapes").classList.toggle("active", mode === "shapes");
+
+      // Hide 1-10 toggle in Shapes mode since shapes uses 5 or 8 shapes
+      document.getElementById("btnRange5").textContent = mode === "shapes" ? "5 Shapes" : "1–5";
+      document.getElementById("btnRange10").textContent = mode === "shapes" ? "8 Shapes" : "1–10";
+
+      resetBoard();
+    }
+
+    function setMaxNumber(n) {
+      maxNumber = n;
+      document.getElementById("btnRange5").classList.toggle("active", n === 5);
+      document.getElementById("btnRange10").classList.toggle("active", n === 10);
+      document.body.classList.toggle("mode-10", n === 10);
+      resetBoard();
+    }
+
+    function toggleHardMode() {
+      hardMode = !hardMode;
+      document.getElementById("btnHard").classList.toggle("active", hardMode);
+      document.body.classList.toggle("hard-mode", hardMode);
+      if (hardMode) {
+        speak("Count the blocks! No numbers!");
+      }
+    }
+
+    function wakeUpAndReset() {
+      document.body.classList.remove("lights-out");
+      document.getElementById("celebration").classList.remove("visible");
+      playWakeUpChime();
+      if (gameMode === "bed") {
+        speak("Good morning! Wake up Numberblocks!");
+      } else {
+        speak("Let's play again!");
+      }
+      resetBoard();
+    }
+
+    function shuffle(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function resetBoard() {
+      matchedCount = 0;
+      selectedId = null;
+      document.body.classList.remove("lights-out");
+      document.getElementById("celebration").classList.remove("visible");
+
+      const targetsArea = document.getElementById("targetsArea");
+      const playground = document.getElementById("playground");
+      targetsArea.innerHTML = "";
+      playground.innerHTML = "";
+
+      if (gameMode === "shapes") {
+        const count = maxNumber === 10 ? 8 : 5;
+        totalTargets = count;
+        const chosenShapes = SHAPES_DATA.slice(0, count);
+
+        // Render Shape Cutout Targets
+        chosenShapes.forEach(shape => {
+          const card = document.createElement("div");
+          card.className = "target-card";
+          card.dataset.id = shape.id;
+          card.innerHTML = `
+            <svg viewBox="0 0 100 100" width="95" height="95" style="fill: rgba(255,255,255,0.12); stroke: rgba(255,255,255,0.5); stroke-width: 4; stroke-dasharray: 6 4;">
+              ${shape.svg}
+            </svg>
+            <div class="target-badge num-text">${shape.name}</div>
+          `;
+          bindTargetTap(card, shape.id, shape.name);
+          targetsArea.appendChild(card);
+        });
+
+        // Render Shuffled Draggable Shapes
+        shuffle(chosenShapes).forEach(shape => {
+          const item = document.createElement("div");
+          item.className = "draggable-item";
+          item.dataset.id = shape.id;
+          item.innerHTML = `
+            <svg viewBox="0 0 100 100" width="96" height="96" style="fill: ${shape.color}; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.4));">
+              ${shape.svg}
+            </svg>
+          `;
+          attachDragAndTap(item, shape.id, () => speak(shape.name));
+          playground.appendChild(item);
+        });
+        return;
+      }
+
+      // Numberblock Games ('bed', 'train', 'snack')
+      totalTargets = maxNumber;
+      const numbers = Array.from({ length: maxNumber }, (_, i) => i + 1);
+
+      numbers.forEach(num => {
+        const data = NUMBER_DATA[num];
+        const id = String(num);
+
+        if (gameMode === "bed") {
+          const bed = document.createElement("div");
+          bed.className = "bed";
+          bed.dataset.id = id;
+
+          const pillow = document.createElement("div");
+          pillow.className = "pillow";
+          const dotsWrap = document.createElement("div");
+          dotsWrap.className = "pillow-dots";
+          for (let d = 0; d < num; d++) {
+            const dot = document.createElement("span");
+            dot.className = "p-dot";
+            dotsWrap.appendChild(dot);
+          }
+          pillow.appendChild(dotsWrap);
+
+          const mattress = document.createElement("div");
+          mattress.className = "bed-mattress";
+
+          const blanket = document.createElement("div");
+          blanket.className = "blanket";
+          blanket.style.background = data.blanket;
+          blanket.innerHTML = `<span class="num-text">${num}</span>`;
+
+          const zzz = document.createElement("div");
+          zzz.className = "zzz";
+          zzz.textContent = "Zzz";
+
+          bed.appendChild(zzz);
+          bed.appendChild(pillow);
+          bed.appendChild(mattress);
+          bed.appendChild(blanket);
+
+          bindTargetTap(bed, id, `Bed ${num}`);
+          targetsArea.appendChild(bed);
+
+        } else if (gameMode === "train") {
+          const car = document.createElement("div");
+          car.className = "target-card train-car";
+          car.dataset.id = id;
+          car.innerHTML = `
+            <div class="target-slot" style="flex:1; display:flex; align-items:flex-end; justify-content:center;"></div>
+            <div class="target-badge"><span class="num-text">Car ${num}</span>${hardMode ? "🚂" : ""}</div>
+          `;
+          bindTargetTap(car, id, `Train car ${num}`);
+          targetsArea.appendChild(car);
+
+        } else if (gameMode === "snack") {
+          const plate = document.createElement("div");
+          plate.className = "target-card";
+          plate.dataset.id = id;
+          const snacks = Array(num).fill(data.food).join("");
+          plate.innerHTML = `
+            <div class="snack-grid">${snacks}</div>
+            <div class="target-slot" style="min-height:40px; display:flex; align-items:center; justify-content:center;"></div>
+            <div class="target-badge num-text">${num}</div>
+          `;
+          bindTargetTap(plate, id, `${num} snacks`);
+          targetsArea.appendChild(plate);
+        }
+      });
+
+      // Render Shuffled Numberblocks on the Floor
+      shuffle(numbers).forEach(num => {
+        const nb = buildNumberblock(num, false);
+        attachDragAndTap(nb, String(num), () => {
+          playCountChimes(num);
+          speak(`${NUMBER_DATA[num].name}!`);
+        });
+        playground.appendChild(nb);
+      });
+    }
+
+    function buildNumberblock(num, isSleepingInBed) {
+      const data = NUMBER_DATA[num];
+      const wrapper = document.createElement("div");
+      wrapper.className = isSleepingInBed ? "in-bed-nb" : "draggable-item";
+      wrapper.dataset.id = String(num);
+
+      if (!isSleepingInBed) {
+        const label = document.createElement("div");
+        label.className = "nb-label num-text";
+        label.textContent = num;
+        wrapper.appendChild(label);
+      }
+
+      const stack = document.createElement("div");
+      stack.className = isSleepingInBed ? "in-bed-stack" : "blocks-stack";
+      if (data.border) stack.style.borderColor = data.border;
+
+      for (let i = 0; i < num; i++) {
+        const cube = document.createElement("div");
+        cube.className = isSleepingInBed ? "in-bed-cube" : "unit-cube";
+        cube.style.background = data.colors[i % data.colors.length];
+
+        if (i === num - 1) {
+          if (isSleepingInBed) cube.classList.add("head-cube");
+          const face = document.createElement("div");
+          face.className = "face";
+          face.innerHTML = isSleepingInBed
+            ? `<div class="closed-eyes"><div class="closed-eye"></div><div class="closed-eye"></div></div>`
+            : `<div class="eyes"><div class="eye"><div class="pupil"></div></div><div class="eye"><div class="pupil"></div></div></div><div class="mouth"></div>`;
+          cube.appendChild(face);
+        }
+        stack.appendChild(cube);
+      }
+
+      wrapper.appendChild(stack);
+      return wrapper;
+    }
+
+    function bindTargetTap(targetEl, targetId, targetLabel) {
+      targetEl.addEventListener("pointerdown", () => {
+        if (!selectedId || targetEl.classList.contains("occupied")) return;
+        if (selectedId === targetId) {
+          completeMatch(targetId, targetEl);
+        } else {
+          playTone(155, 0.25);
+          speak(`Not quite! Try another spot.`);
+        }
+      });
+    }
+
+    function attachDragAndTap(el, id, onTouchAudio) {
+      el.addEventListener("pointerdown", (e) => {
+        if (el.dataset.matched === "true") return;
+        e.preventDefault();
+
+        onTouchAudio();
+
+        document.querySelectorAll(".draggable-item").forEach(item => item.classList.remove("selected"));
+        el.classList.add("selected");
+        selectedId = id;
+
+        const rect = el.getBoundingClientRect();
+        const clone = el.cloneNode(true);
+        clone.classList.add("dragging");
+        clone.style.width = `${rect.width}px`;
+        clone.style.left = `${rect.left}px`;
+        clone.style.top = `${rect.top}px`;
+        document.body.appendChild(clone);
+
+        el.style.opacity = "0.25";
+
+        activeDrag = {
+          id,
+          originalEl: el,
+          cloneEl: clone,
+          offsetX: e.clientX - rect.left,
+          offsetY: e.clientY - rect.top
+        };
+      });
+    }
+
+    window.addEventListener("pointermove", (e) => {
+      if (!activeDrag) return;
+      e.preventDefault();
+      activeDrag.cloneEl.style.left = `${e.clientX - activeDrag.offsetX}px`;
+      activeDrag.cloneEl.style.top = `${e.clientY - activeDrag.offsetY}px`;
+
+      document.querySelectorAll(".bed, .target-card").forEach(target => {
+        const r = target.getBoundingClientRect();
+        const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+        target.classList.toggle("highlight", inside && !target.classList.contains("occupied"));
+      });
+    }, { passive: false });
+
+    window.addEventListener("pointerup", (e) => {
+      if (!activeDrag) return;
+      const { id, originalEl, cloneEl } = activeDrag;
+
+      let matchedTarget = null;
+      let wrongTarget = false;
+
+      document.querySelectorAll(".bed, .target-card").forEach(target => {
+        target.classList.remove("highlight");
+        const r = target.getBoundingClientRect();
+        const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+        if (inside && !target.classList.contains("occupied")) {
+          if (target.dataset.id === id) {
+            matchedTarget = target;
+          } else {
+            wrongTarget = true;
+          }
+        }
+      });
+
+      cloneEl.remove();
+      originalEl.style.opacity = "1";
+      activeDrag = null;
+
+      if (matchedTarget) {
+        completeMatch(id, matchedTarget);
+      } else if (wrongTarget) {
+        playTone(155, 0.25);
+        speak("Count carefully and try again!");
+      }
+    });
+
+    function completeMatch(id, targetEl) {
+      const dragEl = document.querySelector(`.draggable-item[data-id="${id}"]`);
+      if (!dragEl || targetEl.classList.contains("occupied")) return;
+
+      dragEl.dataset.matched = "true";
+      dragEl.style.visibility = "hidden";
+      selectedId = null;
+      document.querySelectorAll(".draggable-item").forEach(i => i.classList.remove("selected"));
+      targetEl.classList.add("occupied");
+
+      playTone(523.25, 0.18, 0);
+      playTone(659.25, 0.3, 0.14);
+
+      if (gameMode === "bed") {
+        const num = Number(id);
+        const mattress = targetEl.querySelector(".bed-mattress");
+        // Render the full stacked Numberblock inside the bed!
+        const sleepingNB = buildNumberblock(num, true);
+        mattress.appendChild(sleepingNB);
+        speak(`Goodnight ${NUMBER_DATA[num].name}!`);
+
+      } else if (gameMode === "train") {
+        const num = Number(id);
+        const slot = targetEl.querySelector(".target-slot");
+        const rider = buildNumberblock(num, false);
+        rider.style.transform = "scale(0.68)";
+        rider.style.transformOrigin = "bottom center";
+        slot.appendChild(rider);
+        speak(`All aboard ${NUMBER_DATA[num].name}!`);
+
+      } else if (gameMode === "snack") {
+        const num = Number(id);
+        const slot = targetEl.querySelector(".target-slot");
+        const eater = buildNumberblock(num, false);
+        eater.style.transform = "scale(0.45)";
+        eater.style.transformOrigin = "bottom center";
+        slot.appendChild(eater);
+        speak(`Yum! ${num} snacks for ${NUMBER_DATA[num].name}!`);
+
+      } else if (gameMode === "shapes") {
+        const shape = SHAPES_DATA.find(s => s.id === id);
+        const svg = targetEl.querySelector("svg");
+        svg.style.fill = shape.color;
+        svg.style.stroke = "#ffffff";
+        svg.style.strokeDasharray = "none";
+        speak(`Great job! That's a ${shape.name}!`);
+      }
+
+      matchedCount++;
+      if (matchedCount === totalTargets) {
+        handleRoundComplete();
+      }
+    }
+
+    function handleRoundComplete() {
+      const celeb = document.getElementById("celebration");
+      const title = document.getElementById("celebTitle");
+      const sub = document.getElementById("celebSub");
+
+      if (gameMode === "bed") {
+        setTimeout(() => {
+          document.body.classList.add("lights-out");
+          playLullaby();
+          speak("Shhh. Goodnight Numberblocks!");
+          title.textContent = "Shhh... Goodnight! 😴";
+          sub.textContent = "Every Numberblock is tucked into bed.";
+          setTimeout(() => celeb.classList.add("visible"), 1000);
+        }, 700);
+
+      } else if (gameMode === "train") {
+        speak("Choo choo! All aboard!");
+        playTone(440, 0.3, 0);
+        playTone(554.37, 0.5, 0.25);
+        document.querySelectorAll(".train-car").forEach(c => c.classList.add("train-departing"));
+        title.textContent = "Choo Choo! 🚂";
+        sub.textContent = "The Numberblock Express is on its way!";
+        setTimeout(() => celeb.classList.add("visible"), 1400);
+
+      } else if (gameMode === "snack") {
+        speak("Yummy! Everyone is full!");
+        playWakeUpChime();
+        title.textContent = "Yummy! 🍎";
+        sub.textContent = "All the Numberblocks ate their snacks!";
+        setTimeout(() => celeb.classList.add("visible"), 900);
+
+      } else if (gameMode === "shapes") {
+        speak("You matched all the shapes!");
+        playWakeUpChime();
+        title.textContent = "Shape Superstar! 🌟";
+        sub.textContent = "You matched every single shape!";
+        setTimeout(() => celeb.classList.add("visible"), 900);
+      }
+    }
+
+    createStars();
+    resetBoard();
+  </script>
+</body>
+</html>

@@ -1190,48 +1190,154 @@
       }
     }
 
-    function playTone(freq, duration = 0.25, delay = 0) {
+    let currentVoiceSource = null;
+    let voiceAudioEl = null;
+    const voiceBufferCache = new Map();
+    const voiceBufferPending = new Map();
+
+    function getAudioCtx() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === "suspended") audioCtx.resume();
+      return audioCtx;
+    }
+
+    function preloadVoiceClip(clipKey) {
+      if (!clipKey || voiceBufferCache.has(clipKey) || voiceBufferPending.has(clipKey)) return;
+      const promise = fetch(`audio/${clipKey}.mp3`)
+        .then(res => (res.ok ? res.arrayBuffer() : Promise.reject(new Error(`HTTP ${res.status}`))))
+        .then(buf => getAudioCtx().decodeAudioData(buf))
+        .then(decoded => {
+          voiceBufferCache.set(clipKey, decoded);
+          return decoded;
+        })
+        .catch(() => null)
+        .finally(() => voiceBufferPending.delete(clipKey));
+      voiceBufferPending.set(clipKey, promise);
+    }
+
+    // Unlock audio and preload celebration clips on first user tap (keeps iOS Safari happy inside setTimeout)
+    window.addEventListener("pointerdown", () => {
       try {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === "suspended") audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + delay);
-        gain.gain.setValueAtTime(0.001, audioCtx.currentTime + delay);
-        gain.gain.exponentialRampToValueAtTime(0.18, audioCtx.currentTime + delay + 0.03);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + delay + duration);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(audioCtx.currentTime + delay);
-        osc.stop(audioCtx.currentTime + delay + duration);
+        getAudioCtx();
+        ["goodnight_all", "train_complete", "snack_complete", "shapes_complete"].forEach(preloadVoiceClip);
+      } catch (e) {}
+    }, { once: true, passive: true });
+
+    function playTone(freq, duration = 0.28, delay = 0) {
+      try {
+        const ctx = getAudioCtx();
+        const start = ctx.currentTime + delay;
+        const end = start + duration;
+
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const filter = ctx.createBiquadFilter();
+        const gain1 = ctx.createGain();
+        const gain2 = ctx.createGain();
+
+        osc1.type = "triangle";
+        osc1.frequency.setValueAtTime(freq, start);
+        osc2.type = "sine";
+        osc2.frequency.setValueAtTime(freq * 2, start);
+
+        filter.type = "lowpass";
+        filter.frequency.setValueAtTime(2200, start);
+
+        gain1.gain.setValueAtTime(0.001, start);
+        gain1.gain.exponentialRampToValueAtTime(0.16, start + 0.015);
+        gain1.gain.exponentialRampToValueAtTime(0.001, end);
+
+        gain2.gain.setValueAtTime(0.001, start);
+        gain2.gain.exponentialRampToValueAtTime(0.04, start + 0.01);
+        gain2.gain.exponentialRampToValueAtTime(0.001, start + duration * 0.6);
+
+        osc1.connect(gain1);
+        osc2.connect(gain2);
+        gain1.connect(filter);
+        gain2.connect(filter);
+        filter.connect(ctx.destination);
+
+        osc1.start(start);
+        osc2.start(start);
+        osc1.stop(end + 0.02);
+        osc2.stop(end + 0.02);
       } catch (e) {}
     }
 
     function playCountChimes(num) {
       const scale = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25, 587.33, 659.25];
       for (let i = 0; i < num; i++) {
-        playTone(scale[i % scale.length], 0.2, i * 0.12);
+        playTone(scale[i % scale.length], 0.24, i * 0.11);
       }
     }
 
     function playWakeUpChime() {
       const notes = [261.63, 329.63, 392.00, 523.25];
-      notes.forEach((n, i) => playTone(n, 0.25, i * 0.1));
+      notes.forEach((n, i) => playTone(n, 0.32, i * 0.1));
     }
 
     function playLullaby() {
       const notes = [392.00, 329.63, 261.63, 293.66, 329.63, 261.63];
-      notes.forEach((n, i) => playTone(n, 0.42, i * 0.32));
+      notes.forEach((n, i) => playTone(n, 0.48, i * 0.32));
     }
 
-    function speak(text) {
+    function speakFallback(text) {
       if (!("speechSynthesis" in window)) return;
       window.speechSynthesis.cancel();
       const utter = new SpeechSynthesisUtterance(text);
       utter.rate = 0.95;
       utter.pitch = 1.15;
       window.speechSynthesis.speak(utter);
+    }
+
+    function stopCurrentVoice() {
+      if (currentVoiceSource) {
+        try { currentVoiceSource.stop(); } catch (e) {}
+        currentVoiceSource = null;
+      }
+      if (voiceAudioEl) {
+        try {
+          voiceAudioEl.pause();
+          voiceAudioEl.currentTime = 0;
+        } catch (e) {}
+      }
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    }
+
+    function speak(text, clipKey) {
+      stopCurrentVoice();
+      if (!clipKey) {
+        speakFallback(text);
+        return;
+      }
+
+      // Fast path: already decoded in Web Audio (zero latency, works inside setTimeout on iOS)
+      if (voiceBufferCache.has(clipKey)) {
+        try {
+          const ctx = getAudioCtx();
+          const src = ctx.createBufferSource();
+          src.buffer = voiceBufferCache.get(clipKey);
+          src.connect(ctx.destination);
+          src.start(0);
+          currentVoiceSource = src;
+          return;
+        } catch (e) {}
+      }
+
+      // Stream MP3 immediately and cache decoded buffer for subsequent plays
+      preloadVoiceClip(clipKey);
+      try {
+        if (!voiceAudioEl) voiceAudioEl = new Audio();
+        voiceAudioEl.src = `audio/${clipKey}.mp3`;
+        const p = voiceAudioEl.play();
+        if (p && typeof p.catch === "function") {
+          p.catch(() => speakFallback(text));
+        }
+      } catch (e) {
+        speakFallback(text);
+      }
     }
 
     function setGameMode(mode) {
@@ -1262,7 +1368,7 @@
       document.getElementById("btnHard").classList.toggle("active", hardMode);
       document.body.classList.toggle("hard-mode", hardMode);
       if (hardMode) {
-        speak("Count the blocks! No numbers!");
+        speak("Count the blocks! No numbers!", "hard_mode");
       }
     }
 
@@ -1271,9 +1377,9 @@
       document.getElementById("celebration").classList.remove("visible");
       playWakeUpChime();
       if (gameMode === "bed") {
-        speak("Good morning! Wake up Numberblocks!");
+        speak("Good morning! Wake up Numberblocks!", "wake_up_bed");
       } else {
-        speak("Let's play again!");
+        speak("Let's play again!", "play_again");
       }
       resetBoard();
     }
@@ -1328,7 +1434,7 @@
               ${shape.svg}
             </svg>
           `;
-          attachDragAndTap(item, shape.id, () => speak(shape.name));
+          attachDragAndTap(item, shape.id, () => speak(shape.name, `shape_${shape.id}`));
           playground.appendChild(item);
         });
         return;
@@ -1409,7 +1515,7 @@
         const nb = buildNumberblock(num, false);
         attachDragAndTap(nb, String(num), () => {
           playCountChimes(num);
-          speak(`${NUMBER_DATA[num].name}!`);
+          speak(`${NUMBER_DATA[num].name}!`, `num_${num}`);
         });
         playground.appendChild(nb);
       });
@@ -1673,7 +1779,7 @@
           completeMatch(targetId, targetEl);
         } else {
           playTone(155, 0.25);
-          speak(`Not quite! Try another spot.`);
+          speak(`Not quite! Try another spot.`, "try_another_spot");
         }
       });
     }
@@ -1750,7 +1856,7 @@
         completeMatch(id, matchedTarget);
       } else if (wrongTarget) {
         playTone(155, 0.25);
-        speak("Count carefully and try again!");
+        speak("Count carefully and try again!", "count_carefully");
       }
     });
 
@@ -1773,7 +1879,7 @@
         // Render the full stacked Numberblock inside the bed!
         const sleepingNB = buildNumberblock(num, true);
         mattress.appendChild(sleepingNB);
-        speak(`Goodnight ${NUMBER_DATA[num].name}!`);
+        speak(`Goodnight ${NUMBER_DATA[num].name}!`, `bed_${num}`);
 
       } else if (gameMode === "train") {
         const num = Number(id);
@@ -1782,7 +1888,7 @@
         rider.style.transform = "scale(0.68)";
         rider.style.transformOrigin = "bottom center";
         slot.appendChild(rider);
-        speak(`All aboard ${NUMBER_DATA[num].name}!`);
+        speak(`All aboard ${NUMBER_DATA[num].name}!`, `train_${num}`);
 
       } else if (gameMode === "snack") {
         const num = Number(id);
@@ -1791,7 +1897,7 @@
         eater.style.transform = "scale(0.45)";
         eater.style.transformOrigin = "bottom center";
         slot.appendChild(eater);
-        speak(`Yum! ${num} snacks for ${NUMBER_DATA[num].name}!`);
+        speak(`Yum! ${num} ${num === 1 ? "snack" : "snacks"} for ${NUMBER_DATA[num].name}!`, `snack_${num}`);
 
       } else if (gameMode === "shapes") {
         const shape = SHAPES_DATA.find(s => s.id === id);
@@ -1799,7 +1905,7 @@
         svg.style.fill = shape.color;
         svg.style.stroke = "#ffffff";
         svg.style.strokeDasharray = "none";
-        speak(`Great job! That's a ${shape.name}!`);
+        speak(`Great job! That's a ${shape.name}!`, `shape_match_${shape.id}`);
       }
 
       matchedCount++;
@@ -1817,14 +1923,14 @@
         setTimeout(() => {
           document.body.classList.add("lights-out");
           playLullaby();
-          speak("Shhh. Goodnight Numberblocks!");
+          speak("Shhh. Goodnight Numberblocks!", "goodnight_all");
           title.textContent = "Shhh... Goodnight! 😴";
           sub.textContent = "Every Numberblock is tucked into bed.";
           setTimeout(() => celeb.classList.add("visible"), 1000);
         }, 700);
 
       } else if (gameMode === "train") {
-        speak("Choo choo! All aboard!");
+        speak("Choo choo! All aboard!", "train_complete");
         playTone(440, 0.3, 0);
         playTone(554.37, 0.5, 0.25);
         document.querySelectorAll(".train-car").forEach(c => c.classList.add("train-departing"));
@@ -1833,14 +1939,14 @@
         setTimeout(() => celeb.classList.add("visible"), 1400);
 
       } else if (gameMode === "snack") {
-        speak("Yummy! Everyone is full!");
+        speak("Yummy! Everyone is full!", "snack_complete");
         playWakeUpChime();
         title.textContent = "Yummy! 🍎";
         sub.textContent = "All the Numberblocks ate their snacks!";
         setTimeout(() => celeb.classList.add("visible"), 900);
 
       } else if (gameMode === "shapes") {
-        speak("You matched all the shapes!");
+        speak("You matched all the shapes!", "shapes_complete");
         playWakeUpChime();
         title.textContent = "Shape Superstar! 🌟";
         sub.textContent = "You matched every single shape!";

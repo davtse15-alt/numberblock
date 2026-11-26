@@ -895,6 +895,27 @@
       padding: 0 14px;
       box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
     }
+    .team-target-box {
+      width: 118px;
+      height: 130px;
+      border-radius: 20px;
+      border: 4px solid var(--gold);
+      background: linear-gradient(180deg, rgba(255, 209, 102, 0.24) 0%, rgba(245, 158, 11, 0.14) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+      transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+    }
+    .team-target-box.solved {
+      border-color: var(--green);
+      background: rgba(74, 222, 128, 0.28);
+      box-shadow: 0 0 24px rgba(74, 222, 128, 0.55);
+      transform: scale(1.06);
+    }
 
     /* 2. BALANCE SEESAW */
     .seesaw-wrap {
@@ -925,16 +946,24 @@
       position: absolute;
       bottom: 16px;
       width: 175px;
-      min-height: 120px;
+      height: 132px;
       border-radius: 18px;
       border: 3px dashed rgba(255,255,255,0.65);
       background: rgba(15, 23, 42, 0.24);
       display: flex;
       align-items: flex-end;
       justify-content: center;
-      gap: 8px;
-      padding: 8px;
+      gap: 6px;
+      padding: 8px 6px;
       transition: border-color 0.2s ease, background 0.2s ease;
+    }
+    .seesaw-nb-slot {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      width: 48px;
+      height: 100%;
+      flex: 0 0 auto;
     }
     .seesaw-pan.left-pan {
       left: 10px;
@@ -979,6 +1008,7 @@
     .pan-total {
       position: absolute;
       top: -14px;
+      z-index: 4;
       background: #1e293b;
       color: var(--gold);
       font-size: 0.9rem;
@@ -986,6 +1016,9 @@
       padding: 2px 10px;
       border-radius: 999px;
       border: 2px solid rgba(255,255,255,0.3);
+    }
+    .seesaw-pan.left-pan .nb-label {
+      display: none;
     }
 
     /* 3. SPLIT & SHARE */
@@ -1363,14 +1396,17 @@
       .train-wheels { bottom: -14px; left: 10px; right: 10px; }
 
       .prompt-banner { font-size: 0.92rem; padding: 7px 14px; }
-      .team-card { padding: 12px 12px; gap: 10px; }
+      .team-card { padding: 12px 10px; gap: 10px; }
+      .team-slots-row { gap: 6px; }
       .puzzle-drop { width: 88px; height: 104px; }
+      .team-target-box { width: 88px; height: 104px; }
       .target-total-pill { min-width: 56px; height: 56px; font-size: 1.7rem; }
-      .math-op { font-size: 1.5rem; }
+      .math-op { font-size: 1.4rem; }
       .team-dot { width: 18px; height: 18px; }
 
       .seesaw-wrap { height: 185px; }
-      .seesaw-pan { width: 122px; min-height: 92px; }
+      .seesaw-pan { width: 126px; height: 98px; gap: 4px; padding: 6px 4px; }
+      .seesaw-nb-slot { width: 34px; }
       .seesaw-sign { width: 44px; height: 44px; font-size: 1.7rem; }
 
       .shifter-cell { width: 24px; height: 24px; }
@@ -1547,6 +1583,7 @@
 
     // Multi-round adventure state
     let adventureRound = 1;
+    let adventureTimer = null;
     const ADVENTURE_TOTAL_ROUNDS = 5;
     let teamState = null;
     let patternState = null;
@@ -1846,6 +1883,23 @@
         [arr[i], arr[j]] = [arr[j], arr[i]];
       }
       return arr;
+    }
+
+    function fillChoicePool(seedChoices, desiredCount, minVal, maxVal, maxExclusive, maxDuplicates = 2) {
+      const choices = [...seedChoices];
+      const upper = Math.min(maxVal, maxExclusive - 1);
+      const candidates = [];
+      for (let v = minVal; v <= upper; v++) {
+        const existing = choices.filter(x => x === v).length;
+        for (let k = existing; k < maxDuplicates; k++) {
+          candidates.push(v);
+        }
+      }
+      for (const c of shuffle(candidates)) {
+        if (choices.length >= desiredCount) break;
+        choices.push(c);
+      }
+      return choices;
     }
 
     function getCurrentNumberList() {
@@ -2215,6 +2269,10 @@
        BOARD ROUTER
        =========================== */
     function resetBoard() {
+      if (adventureTimer) {
+        clearTimeout(adventureTimer);
+        adventureTimer = null;
+      }
       matchedCount = 0;
       selectedId = null;
       selectedUid = null;
@@ -2475,11 +2533,20 @@
             <div class="math-op">+</div>
             <div class="puzzle-drop" id="teamSlotB" data-drop="teamB"><span style="font-size:2rem;opacity:0.5;">?</span></div>
             <div class="math-op">=</div>
-            <div class="target-total-pill"><span class="num-text">${target}</span><span class="hard-only">🎯</span></div>
+            <div class="team-target-box" id="teamTargetResult"></div>
           </div>
         </div>
       `;
       targetsArea.appendChild(stage);
+
+      const targetBox = document.getElementById("teamTargetResult");
+      const targetNB = buildNumberblock(target, false);
+      const targetScale = target > 10 ? 0.36 : target > 6 ? 0.42 : 0.54;
+      targetNB.style.transform = `scale(${targetScale})`;
+      targetNB.style.transformOrigin = "center center";
+      targetNB.style.pointerEvents = "none";
+      targetBox.appendChild(targetNB);
+
       updateTeamVisuals();
 
       // Tap slots to place selected or remove placed
@@ -2498,13 +2565,9 @@
         });
       });
 
-      // Build playground options (a, b, plus 3-4 helpful choices)
-      const choices = [a, b];
+      // Build playground options (a, b, plus helpful choices without risking an infinite loop)
       const maxChoice = rangeMode === "5" ? 4 : 10;
-      while (choices.length < 6) {
-        const c = 1 + Math.floor(Math.random() * maxChoice);
-        if (c < target && choices.filter(x => x === c).length < 2) choices.push(c);
-      }
+      const choices = fillChoicePool([a, b], 6, 1, maxChoice, target, 2);
 
       shuffle(choices).forEach(num => {
         const nb = buildNumberblock(num, false);
@@ -2551,6 +2614,9 @@
           el.innerHTML = `<span style="font-size:2rem;opacity:0.55;">?</span>`;
         }
       });
+
+      const targetBox = document.getElementById("teamTargetResult");
+      if (targetBox) targetBox.classList.toggle("solved", solved);
     }
 
     function handleTeamDrop(num, whichSlot) {
@@ -2776,11 +2842,15 @@
       `;
       targetsArea.appendChild(stage);
 
+      const leftSlot = document.createElement("div");
+      leftSlot.className = "seesaw-nb-slot";
       const leftNB = buildNumberblock(leftTarget, false);
-      leftNB.style.transform = leftTarget > 10 ? "scale(0.55)" : "scale(0.62)";
+      const leftScale = leftTarget > 10 ? 0.42 : leftTarget > 6 ? 0.46 : 0.56;
+      leftNB.style.transform = `scale(${leftScale})`;
       leftNB.style.transformOrigin = "bottom center";
       leftNB.style.pointerEvents = "none";
-      document.getElementById("seesawLeft").appendChild(leftNB);
+      leftSlot.appendChild(leftNB);
+      document.getElementById("seesawLeft").appendChild(leftSlot);
 
       const rightPan = document.getElementById("seesawRight");
       rightPan.addEventListener("pointerdown", (e) => {
@@ -2792,12 +2862,9 @@
 
       // Playground: exclude exact leftTarget so he combines 2+ blocks (e.g., doubles or bonds!)
       const half = Math.floor(leftTarget / 2);
-      const choices = leftTarget % 2 === 0 ? [half, half] : [half, leftTarget - half];
+      const seedChoices = leftTarget % 2 === 0 ? [half, half] : [half, leftTarget - half];
       const maxC = rangeMode === "5" ? 4 : 9;
-      while (choices.length < 6) {
-        const c = 1 + Math.floor(Math.random() * maxC);
-        if (c < leftTarget && choices.filter(x => x === c).length < 2) choices.push(c);
-      }
+      const choices = fillChoicePool(seedChoices, 6, 1, maxC, leftTarget, 2);
 
       shuffle(choices).forEach(num => {
         const nb = buildNumberblock(num, false);
@@ -2852,18 +2919,26 @@
       const rightPan = document.getElementById("seesawRight");
       rightPan.innerHTML = `<div class="pan-total num-text">${rightSum}</div>`;
       rightBlocks.forEach((num, idx) => {
+        const slot = document.createElement("div");
+        slot.className = "seesaw-nb-slot";
         const nb = buildNumberblock(num, false);
-        nb.style.transform = "scale(0.5)";
+        const nbScale = num > 6 ? 0.42 : 0.48;
+        nb.style.transform = `scale(${nbScale})`;
         nb.style.transformOrigin = "bottom center";
         nb.style.cursor = "pointer";
         nb.addEventListener("pointerdown", (e) => {
           e.stopPropagation();
           if (seesawState.solved) return;
+          if (selectedId) {
+            addSeesawBlock(Number(selectedId));
+            return;
+          }
           seesawState.rightBlocks.splice(idx, 1);
           playTone(300, 0.14);
           updateSeesawPhysics();
         });
-        rightPan.appendChild(nb);
+        slot.appendChild(nb);
+        rightPan.appendChild(slot);
       });
     }
 
@@ -2926,12 +3001,9 @@
         });
       });
 
-      const choices = isHalving ? [answerRight, answerRight] : [answerRight];
+      const seedChoices = isHalving ? [answerRight, answerRight] : [answerRight];
       const maxC = rangeMode === "5" ? 4 : 10;
-      while (choices.length < 6) {
-        const c = 1 + Math.floor(Math.random() * maxC);
-        if (c < whole && choices.filter(x => x === c).length < 2) choices.push(c);
-      }
+      const choices = fillChoicePool(seedChoices, 6, 1, maxC, whole, 2);
 
       shuffle(choices).forEach(num => {
         const nb = buildNumberblock(num, false);
@@ -3140,7 +3212,11 @@
        ADVENTURE PROGRESSION & CELEBRATION
        =========================== */
     function advanceAdventureRound(delay = 1400) {
-      setTimeout(() => {
+      if (adventureTimer) clearTimeout(adventureTimer);
+      const expectedMode = gameMode;
+      adventureTimer = setTimeout(() => {
+        adventureTimer = null;
+        if (gameMode !== expectedMode) return;
         if (adventureRound >= ADVENTURE_TOTAL_ROUNDS) {
           handleRoundComplete();
         } else {
@@ -3291,6 +3367,14 @@
           speak("Count carefully and try again!", "count_carefully");
         }
       }
+    });
+
+    window.addEventListener("pointercancel", () => {
+      if (!activeDrag) return;
+      getDropTargets().forEach(t => t.classList.remove("highlight"));
+      activeDrag.cloneEl.remove();
+      activeDrag.originalEl.style.opacity = "1";
+      activeDrag = null;
     });
 
     createStars();

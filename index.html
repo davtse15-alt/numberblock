@@ -704,6 +704,29 @@
       pointer-events: none;
     }
 
+    .train-car-v2 .target-slot {
+      position: relative;
+      width: 100%;
+      flex: 1 1 0;
+      min-height: 0;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 2;
+    }
+
+    .train-car-v2 .target-slot > .draggable-item {
+      position: absolute;
+      bottom: 2px;
+      left: 50%;
+      transform-origin: bottom center;
+      pointer-events: none;
+    }
+
+    .train-car-v2 .target-slot .nb-label {
+      display: none;
+    }
+
     .train-wheels {
       position: absolute;
       bottom: -18px;
@@ -1135,13 +1158,13 @@
     .playground {
       position: relative;
       z-index: 12;
-      height: 33vh;
-      min-height: 205px;
+      height: 34vh;
+      min-height: 225px;
       display: flex;
       justify-content: center;
       align-items: flex-end;
       gap: 24px;
-      padding: 0 20px 20px;
+      padding: 14px 20px 14px;
       flex-wrap: nowrap;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
@@ -1313,15 +1336,22 @@
     body.mode-10 .bed.occupied .blanket { height: calc(100% - 42px); border-top-width: 8px; }
     body.mode-10 .target-card { width: 112px; height: 162px; }
     body.mode-10 .snack-frame { font-size: 0.92rem; min-height: 44px; }
-    body.mode-10 .unit-cube { width: 38px; height: 16px; }
-    body.mode-10 .unit-cube.head-cube { height: 26px; }
+    body.mode-10 .unit-cube,
+    body.compact-blocks .unit-cube { width: 38px; height: 15px; }
+    body.mode-10 .unit-cube.head-cube,
+    body.compact-blocks .unit-cube.head-cube { height: 25px; }
     body.mode-10 .in-bed-cube { width: 36px; height: 10px; }
     body.mode-10 .in-bed-cube.head-cube { height: 30px; }
-    body.mode-10 .nb-arm { width: 12px; height: 6px; }
-    body.mode-10 .nb-arm.left { left: -9px; }
-    body.mode-10 .nb-arm.right { right: -9px; }
-    body.mode-10 .nb-shoe { width: 12px; height: 7px; }
-    body.mode-10 .playground { gap: 16px; }
+    body.mode-10 .nb-arm,
+    body.compact-blocks .nb-arm { width: 12px; height: 6px; }
+    body.mode-10 .nb-arm.left,
+    body.compact-blocks .nb-arm.left { left: -9px; }
+    body.mode-10 .nb-arm.right,
+    body.compact-blocks .nb-arm.right { right: -9px; }
+    body.mode-10 .nb-shoe,
+    body.compact-blocks .nb-shoe { width: 12px; height: 7px; }
+    body.mode-10 .playground,
+    body.compact-blocks .playground { gap: 16px; }
 
     /* Celebration Modal */
     .celebration {
@@ -1435,8 +1465,10 @@
       body.mode-10 .pillow { width: 54px; height: 24px; }
       body.mode-10 .target-card { width: calc((100vw - 44px) / 5); max-width: 72px; height: 98px; padding: 4px; }
       body.mode-10 .snack-frame { font-size: 0.64rem; min-height: 32px; }
-      body.mode-10 .unit-cube { width: 26px; height: 10px; }
-      body.mode-10 .unit-cube.head-cube { height: 18px; }
+      body.mode-10 .unit-cube,
+      body.compact-blocks .unit-cube { width: 26px; height: 10px; }
+      body.mode-10 .unit-cube.head-cube,
+      body.compact-blocks .unit-cube.head-cube { height: 18px; }
     }
 
     @media (max-height: 480px) and (pointer: coarse) {
@@ -1787,7 +1819,8 @@
 
     function updateBodyClasses() {
       const isTenGrid = (gameMode === "bed" || gameMode === "snack" || gameMode === "shapes") && (rangeMode === "10" || rangeMode === "20");
-      document.body.className = `theme-${gameMode} ${isTenGrid ? "mode-10" : ""} ${hardMode ? "hard-mode" : ""}`;
+      const useCompactBlocks = isTenGrid || rangeMode === "10" || rangeMode === "20" || gameMode === "pattern";
+      document.body.className = `theme-${gameMode} ${isTenGrid ? "mode-10" : ""} ${useCompactBlocks ? "compact-blocks" : ""} ${hardMode ? "hard-mode" : ""}`;
     }
 
     function setGameMode(mode) {
@@ -2462,6 +2495,13 @@
       });
     }
 
+    function placeTrainRider(slotEl, num) {
+      const rider = buildNumberblock(num, false);
+      const scale = num > 10 ? 0.56 : num >= 9 ? 0.50 : num >= 7 ? 0.56 : 0.64;
+      rider.style.transform = `translateX(-50%) scale(${scale})`;
+      slotEl.appendChild(rider);
+    }
+
     function completeClassicMatch(id, targetEl) {
       const dragEl = document.querySelector(`.draggable-item[data-id="${id}"]:not([data-matched="true"])`);
       if (!dragEl || targetEl.classList.contains("occupied")) return;
@@ -2482,10 +2522,7 @@
         speak(`Goodnight ${NUMBER_DATA[num].name}!`, num <= 20 ? `bed_${num}` : null);
       } else if (gameMode === "train") {
         const num = Number(id);
-        const rider = buildNumberblock(num, false);
-        rider.style.transform = num > 10 ? "scale(0.5)" : "scale(0.56)";
-        rider.style.transformOrigin = "bottom center";
-        targetEl.querySelector(".target-slot").appendChild(rider);
+        placeTrainRider(targetEl.querySelector(".target-slot"), num);
         speak(`All aboard ${NUMBER_DATA[num].name}!`, num <= 20 ? `train_${num}` : null);
       } else if (gameMode === "snack") {
         const num = Number(id);
@@ -2739,11 +2776,7 @@
           <div class="train-wheels"><span class="t-wheel"></span><span class="t-wheel"></span></div>
         `;
         if (!isMissing) {
-          const rider = buildNumberblock(num, false);
-          rider.style.transform = num > 10 ? "scale(0.5)" : "scale(0.56)";
-          rider.style.transformOrigin = "bottom center";
-          rider.style.pointerEvents = "none";
-          car.querySelector(".target-slot").appendChild(rider);
+          placeTrainRider(car.querySelector(".target-slot"), num);
         } else {
           car.addEventListener("pointerdown", () => {
             if (!selectedId || car.classList.contains("occupied")) return;
@@ -2800,11 +2833,7 @@
 
         carEl.classList.remove("missing-slot");
         carEl.classList.add("occupied");
-        const rider = buildNumberblock(num, false);
-        rider.style.transform = num > 10 ? "scale(0.5)" : "scale(0.56)";
-        rider.style.transformOrigin = "bottom center";
-        rider.style.pointerEvents = "none";
-        carEl.querySelector(".target-slot").appendChild(rider);
+        placeTrainRider(carEl.querySelector(".target-slot"), num);
         carEl.querySelector(".target-badge").innerHTML = `<span class="num-text">${num}</span>`;
 
         playSuccessChime();

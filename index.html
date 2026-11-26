@@ -1732,7 +1732,7 @@
 
     function speakNumber(num) {
       const name = NUMBER_DATA[num]?.name || String(num);
-      speak(`${name}!`, num <= 10 ? `num_${num}` : null);
+      speak(`${name}!`, num <= 20 ? `num_${num}` : null);
     }
 
     /* ===========================
@@ -1852,7 +1852,7 @@
     function toggleShuffle() {
       shuffleTargets = !shuffleTargets;
       document.getElementById("btnShuffle").classList.toggle("active", shuffleTargets);
-      if (shuffleTargets) speak("Mixed up! Find the right spot!");
+      if (shuffleTargets) speak("Mixed up! Find the right spot!", "shuffle_on");
       resetBoard();
     }
 
@@ -2479,21 +2479,21 @@
       if (gameMode === "bed") {
         const num = Number(id);
         targetEl.querySelector(".bed-mattress").appendChild(buildNumberblock(num, true));
-        speak(`Goodnight ${NUMBER_DATA[num].name}!`, num <= 10 ? `bed_${num}` : null);
+        speak(`Goodnight ${NUMBER_DATA[num].name}!`, num <= 20 ? `bed_${num}` : null);
       } else if (gameMode === "train") {
         const num = Number(id);
         const rider = buildNumberblock(num, false);
         rider.style.transform = num > 10 ? "scale(0.5)" : "scale(0.56)";
         rider.style.transformOrigin = "bottom center";
         targetEl.querySelector(".target-slot").appendChild(rider);
-        speak(`All aboard ${NUMBER_DATA[num].name}!`, num <= 10 ? `train_${num}` : null);
+        speak(`All aboard ${NUMBER_DATA[num].name}!`, num <= 20 ? `train_${num}` : null);
       } else if (gameMode === "snack") {
         const num = Number(id);
         const eater = buildNumberblock(num, false);
         eater.style.transform = "scale(0.42)";
         eater.style.transformOrigin = "bottom center";
         targetEl.querySelector(".target-slot").appendChild(eater);
-        speak(`Yum! ${num} ${num === 1 ? "snack" : "snacks"} for ${NUMBER_DATA[num].name}!`, num <= 10 ? `snack_${num}` : null);
+        speak(`Yum! ${num} ${num === 1 ? "snack" : "snacks"} for ${NUMBER_DATA[num].name}!`, num <= 20 ? `snack_${num}` : null);
       } else if (gameMode === "shapes") {
         const shape = SHAPES_DATA.find(s => s.id === id);
         const svg = targetEl.querySelector("svg");
@@ -2578,7 +2578,7 @@
         playground.appendChild(nb);
       });
 
-      speak(`Team up two Numberblocks to make ${NUMBER_DATA[target].name}!`);
+      speak(`Team up two Numberblocks to make ${NUMBER_DATA[target].name}!`, `team_make_${target}`);
     }
 
     function updateTeamVisuals() {
@@ -2638,12 +2638,12 @@
           teamState.solved = true;
           updateTeamVisuals();
           playSuccessChime();
-          speak(`${NUMBER_DATA[slotA].name} plus ${NUMBER_DATA[slotB].name} makes ${NUMBER_DATA[target].name}!`);
+          speak(`Awesome! You made ${NUMBER_DATA[target].name}!`, `team_win_${target}`);
           advanceAdventureRound();
         } else {
           playTone(155, 0.25);
-          const hint = sum > target ? `${sum} is too big! Try a smaller block.` : `${sum} is too small! Try a bigger block.`;
-          speak(hint);
+          const hint = sum > target ? "That's too big! Try a smaller block." : "That's too small! Try a bigger block.";
+          speak(hint, sum > target ? "team_too_big" : "team_too_small");
           setTimeout(() => {
             if (!teamState.solved) {
               teamState[whichSlot] = null;
@@ -2655,9 +2655,9 @@
         const rem = target - num;
         playTone(440, 0.18);
         if (rem > 0) {
-          speak(`${NUMBER_DATA[num].name}! How many more to make ${NUMBER_DATA[target].name}?`);
+          speak("Great start! Now add one more Numberblock!", "team_how_many_more");
         } else {
-          speak(`Oops! Pick a smaller block than ${NUMBER_DATA[target].name}.`);
+          speak("Oops! Try a smaller Numberblock!", "team_pick_smaller");
           teamState[whichSlot] = null;
           updateTeamVisuals();
         }
@@ -2775,7 +2775,16 @@
         playground.appendChild(nb);
       });
 
-      speak(`${label} Fill in the missing train cars!`);
+      const patClip = rangeMode === "20"
+        ? "pattern_teens"
+        : label.toLowerCase().includes("countdown") || label.toLowerCase().includes("down")
+          ? "pattern_down"
+          : label.toLowerCase().includes("even") || label.toLowerCase().includes("2s")
+            ? "pattern_evens"
+            : label.toLowerCase().includes("odd")
+              ? "pattern_odds"
+              : "pattern_up";
+      speak(`${label} Fill in the missing train cars!`, patClip);
     }
 
     function handlePatternDrop(num, carEl) {
@@ -2799,7 +2808,7 @@
         carEl.querySelector(".target-badge").innerHTML = `<span class="num-text">${num}</span>`;
 
         playSuccessChime();
-        speak(`Yes! ${NUMBER_DATA[num].name}!`);
+        speak(`Yes! ${NUMBER_DATA[num].name}!`, "pattern_yes");
         patternState.filledCount++;
 
         if (patternState.filledCount === patternState.totalMissing) {
@@ -2811,7 +2820,7 @@
         }
       } else {
         playTone(155, 0.25);
-        speak("Look at the pattern and try another Numberblock!");
+        speak("Look at the pattern and try another Numberblock!", "pattern_try_again");
       }
     }
 
@@ -2876,13 +2885,13 @@
       });
 
       updateSeesawPhysics();
-      speak(`Balance the seesaw! Make ${NUMBER_DATA[leftTarget].name} on the right side!`);
+      speak(`Balance the seesaw! Make ${NUMBER_DATA[leftTarget].name} on the right side!`, `seesaw_make_${leftTarget}`);
     }
 
     function addSeesawBlock(num) {
       if (seesawState.solved) return;
       if (seesawState.rightBlocks.length >= 3) {
-        speak("Tap a block on the seesaw to take it off first!");
+        speak("Tap a block on the seesaw to take it off first!", "seesaw_full");
         return;
       }
       selectedId = null;
@@ -2896,12 +2905,14 @@
         document.getElementById("seesawRight").classList.add("balanced");
         playSuccessChime();
         const isDouble = seesawState.rightBlocks.length === 2 && seesawState.rightBlocks[0] === seesawState.rightBlocks[1];
-        const eqText = seesawState.rightBlocks.map(n => NUMBER_DATA[n].name).join(" plus ");
-        speak(`Balanced! ${eqText} equals ${NUMBER_DATA[seesawState.leftTarget].name}!${isDouble ? " That's a double!" : ""}`);
+        speak(
+          isDouble ? "Balanced! Both sides are equal! That's a double!" : "Balanced! Both sides are equal!",
+          isDouble ? "seesaw_double" : "seesaw_balanced"
+        );
         advanceAdventureRound();
       } else if (sum > seesawState.leftTarget) {
         playTone(155, 0.25);
-        speak("Too heavy! Tap a block on the seesaw to take it off.");
+        speak("Too heavy! Tap a block on the seesaw to take it off.", "seesaw_heavy");
       } else {
         playTone(440, 0.16);
       }
@@ -3014,9 +3025,12 @@
         playground.appendChild(nb);
       });
 
-      speak(isHalving
-        ? `Split ${NUMBER_DATA[whole].name} into two equal halves!`
-        : `${NUMBER_DATA[whole].name} splits into ${NUMBER_DATA[knownLeft].name} and what?`);
+      speak(
+        isHalving
+          ? `Split ${NUMBER_DATA[whole].name} into two equal halves!`
+          : `How can we split this Numberblock? Find the missing part!`,
+        isHalving ? `split_half_${whole}` : "split_sub"
+      );
     }
 
     function updateSplitVisuals() {
@@ -3054,11 +3068,14 @@
           splitState.solved = true;
           updateSplitVisuals();
           playSuccessChime();
-          speak(`Awesome! ${NUMBER_DATA[whole].name} splits into ${NUMBER_DATA[left].name} and ${NUMBER_DATA[right].name}!`);
+          speak("Awesome! You split it!", "split_win");
           advanceAdventureRound();
         } else {
           playTone(155, 0.25);
-          speak(isHalving && left !== right ? "Make both halves the same!" : "Try another Numberblock!");
+          speak(
+            isHalving && left !== right ? "Make both halves the same!" : "Try another Numberblock!",
+            isHalving && left !== right ? "split_equal_hint" : "split_try_again"
+          );
           setTimeout(() => {
             if (!splitState.solved) {
               splitState[side] = null;
@@ -3137,7 +3154,7 @@
       });
 
       renderShifterPlayground();
-      speak(`Find the Numberblock that fits the ${rows} by ${cols} doorway! Tap Morph to change its shape!`);
+      speak("Find the Numberblock that fits the doorway! Tap Morph to change its shape!", "shifter_intro");
     }
 
     function renderShifterPlayground() {
@@ -3159,7 +3176,7 @@
 
     function morphSelectedBlock() {
       if (!selectedId || shifterState.solved) {
-        speak("Tap a Numberblock first!");
+        speak("Tap a Numberblock first!", "shifter_tap_first");
         return;
       }
       const num = Number(selectedId);
@@ -3170,7 +3187,7 @@
       playTone(783.99, 0.2, 0.08);
       document.getElementById("morphHint").textContent = `${NUMBER_DATA[num].name} is now ${dims[0]} × ${dims[1]}!`;
       renderShifterPlayground();
-      speak(`${dims[0]} by ${dims[1]}!`);
+      speak("Nice shape!", "shifter_morphed");
     }
 
     function handleShifterDrop(num) {
@@ -3181,14 +3198,14 @@
 
       if (num !== puzzle.num) {
         playTone(155, 0.25);
-        speak("Count the squares in the doorway and try another Numberblock!");
+        speak("Count the squares in the doorway and try another Numberblock!", "shifter_wrong");
         return;
       }
 
       if (dims[0] !== tR || dims[1] !== tC) {
         playTone(349.23, 0.2);
         document.getElementById("btnMorph").classList.add("pulse");
-        speak(`Right number! Now tap Morph Shape to make ${tR} by ${tC}!`);
+        speak("Right number! Now tap Morph Shape to make it fit!", "shifter_morph_hint");
         return;
       }
 
@@ -3204,7 +3221,10 @@
       });
       playSuccessChime();
       const isSq = tR === tC;
-      speak(`Perfect fit! ${tR} by ${tC} makes ${NUMBER_DATA[num].name}!${isSq ? " That's a square!" : ""}`);
+      speak(
+        isSq ? "Perfect fit! That's a square!" : "Perfect fit! You matched the shape!",
+        isSq ? "shifter_win_square" : "shifter_win"
+      );
       advanceAdventureRound(1500);
     }
 
@@ -3262,7 +3282,7 @@
       } else {
         playWakeUpChime();
         const g = GAMES.find(x => x.id === gameMode);
-        speak(`Amazing job! You finished ${g.name}!`);
+        speak(`Amazing job! You finished ${g.name}!`, `complete_${gameMode}`);
         title.textContent = `${g.icon} Math Superstar!`;
         sub.textContent = `You completed all ${ADVENTURE_TOTAL_ROUNDS} rounds of ${g.name}!`;
         celeb.classList.add("visible");
